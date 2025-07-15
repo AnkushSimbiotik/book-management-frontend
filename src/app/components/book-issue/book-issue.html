@@ -1,0 +1,43 @@
+<!-- src/app/components/book-issue/book-issue.component.html -->
+<h2>Issue Book</h2>
+<form [formGroup]="issueForm" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label>User Search</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="userSearch"
+      (input)="searchUsers()"
+      [ngModelOptions]="{standalone: true}"
+    />
+  </div>
+  <div class="form-group">
+    <label>User ID</label>
+    <input type="text" class="form-control" formControlName="userId" />
+  </div>
+  <div class="form-group">
+    <label>Book Search</label>
+    <input
+      type="text"
+      class="form-control"
+      [(ngModel)]="bookSearch"
+      (input)="searchBooks()"
+      [ngModelOptions]="{standalone: true}"
+    />
+  </div>
+  <div class="form-group">
+    <label>Book ID</label>
+    <input type="text" class="form-control" formControlName="bookId" />
+  </div>
+  <div class="form-group">
+    <label>Issue Date</label>
+    <input type="date" class="form-control" formControlName="issueDate" />
+  </div>
+  <button
+    type="submit"
+    class="btn btn-primary mt-3"
+    [disabled]="issueForm.invalid"
+  >
+    Issue Book
+  </button>
+</form>

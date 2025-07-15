@@ -1,0 +1,66 @@
+<div class="container mt-4">
+  <div class="card border-0 shadow-sm animate__animated animate__fadeIn">
+    <div class="card-body">
+      <h2 class="card-title text-primary">Create New Book</h2>
+      <div
+        *ngIf="showSuccess"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        Book created successfully!
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            formControlName="title"
+            placeholder="Enter book title"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="author" class="form-label">Author</label>
+          <input
+            type="text"
+            class="form-control"
+            id="author"
+            formControlName="author"
+            placeholder="Enter author name"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="topic" class="form-label">Topics</label>
+          <select
+            multiple
+            class="form-select"
+            id="topic"
+            formControlName="topic"
+            ngbTooltip="Select one or more topics"
+          >
+            <option *ngFor="let topic of topics" [value]="topic.id">
+              {{ topic.genre }}
+            </option>
+          </select>
+        </div>
+        <div class="d-flex justify-content-between">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="bookForm.invalid"
+          >
+            Create Book
+          </button>
+          <a routerLink="/books" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

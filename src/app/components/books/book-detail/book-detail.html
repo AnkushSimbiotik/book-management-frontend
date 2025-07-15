@@ -1,0 +1,15 @@
+
+<div *ngIf="book; else noBook" class="card border-0 shadow-sm animate__animated animate__fadeIn">
+  <div class="card-body">
+    <h2 class="card-title text-primary">{{ book.title }}</h2>
+    <p class="card-text"><strong>Author:</strong> {{ book.author }}</p>
+    <p class="card-text"><strong>Topics:</strong> {{ getTopicNames(book.topic) }}</p>
+    <a routerLink="/books" class="btn btn-outline-secondary" ngbTooltip="Return to book list">Back to List</a>
+  </div>
+</div>
+<ng-template #noBook>
+  <div class="alert alert-warning animate__animated animate__fadeIn" role="alert">
+    Book not found.
+    <a routerLink="/books" class="btn btn-outline-secondary mt-2" ngbTooltip="Return to book list">Back to List</a>
+  </div>
+</ng-template>

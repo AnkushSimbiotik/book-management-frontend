@@ -1,0 +1,78 @@
+<!-- src/app/components/dashboard/dashboard.component.html -->
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeIn">
+      <div class="card-body text-center">
+        <h5 class="card-title text-primary">Total Books</h5>
+        <p class="card-text display-4 fw-bold text-dark">{{ totalBooks }}</p>
+        <a routerLink="/books" class="btn btn-outline-primary mt-3" ngbTooltip="View all books">Go to Books</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeIn">
+      <div class="card-body text-center">
+        <h5 class="card-title text-primary">Total Topics</h5>
+        <p class="card-text display-4 fw-bold text-dark">{{ totalTopics }}</p>
+        <a routerLink="/topics" class="btn btn-outline-primary mt-3" ngbTooltip="View all topics">Go to Topics</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 mt-4">
+    <div class="card border-0 shadow-sm animate__animated animate__fadeIn">
+      <div class="card-body">
+        <h5 class="card-title text-primary">Books by Topic</h5>
+        <div class="mb-3">
+          <label for="topicSelect" class="form-label">Select Topic</label>
+          <select
+            id="topicSelect"
+            class="form-select"
+            [(ngModel)]="selectedTopicId"
+            (ngModelChange)="onTopicChange()"
+            ngbTooltip="Select a topic to filter books"
+          >
+            <option [ngValue]="null">All Topics</option>
+            <option *ngFor="let topic of topics" [ngValue]="topic.id">{{ topic.genre }}</option>
+          </select>
+        </div>
+        <div class="table-responsive" *ngIf="filteredBooks.length > 0; else noBooks">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Topics</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let book of filteredBooks" class="animate__animated animate__fadeIn">
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>{{ getTopicNames(book.topic) }}</td>
+                <td>
+                  <a
+                    [routerLink]="['/books', book.id]"
+                    class="btn btn-outline-info btn-sm"
+                    ngbTooltip="View book details"
+                  >View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noBooks>
+          <div class="alert alert-info" role="alert">
+            No books found for the selected topic.
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 mt-4 text-center">
+    <div class="btn-group" role="group">
+      <a routerLink="/issue" class="btn btn-primary" ngbTooltip="Issue a book to a user">Issue Book</a>
+      <a routerLink="/return" class="btn btn-primary" ngbTooltip="Return a book">Return Book</a>
+    </div>
+  </div>
+</div>

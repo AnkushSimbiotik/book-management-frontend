@@ -1,0 +1,32 @@
+<!-- src/app/components/books/book-list/book-list.component.html -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="text-primary">Books</h2>
+  <a routerLink="/books/create" class="btn btn-primary" ngbTooltip="Add a new book">Create New Book</a>
+</div>
+<div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="books.length === 0">
+  No books available. Start by creating a new book!
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Topics</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let book of books" class="animate__animated animate__fadeIn">
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ getTopicNames(book.topic) }}</td>
+        <td>
+          <button class="btn btn-outline-info btn-sm me-2" (click)="viewBook(book.id)" ngbTooltip="View book details">View</button>
+          <button class="btn btn-outline-danger btn-sm" (click)="deleteBook(book.id)" ngbTooltip="Delete book">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
