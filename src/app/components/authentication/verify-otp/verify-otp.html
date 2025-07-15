@@ -1,0 +1,29 @@
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="card shadow p-4 w-100" style="max-width: 400px;">
+    <h2 class="card-title text-center mb-4">Verify OTP</h2>
+    <p class="mb-3">An OTP has been sent to {{ email }}. Please enter it below.</p>
+    <form (ngSubmit)="onSubmit()" #otpForm="ngForm">
+      <div class="mb-3">
+        <label for="otp" class="form-label">OTP</label>
+        <input
+          type="text"
+          id="otp"
+          [(ngModel)]="otp"
+          name="otp"
+          required
+          class="form-control"
+        />
+      </div>
+      <button
+        type="submit"
+        [disabled]="otpForm.invalid"
+        class="btn btn-primary w-100"
+      >
+        Verify OTP
+      </button>
+    </form>
+    <p class="text-center mt-3">
+      Back to <a routerLink="/forgot-password" class="text-primary text-decoration-underline">Forgot Password</a>
+    </p>
+  </div>
+</div>

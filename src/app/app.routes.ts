@@ -8,16 +8,30 @@ import { BookDetailComponent } from './components/books/book-detail/book-detail'
 import { TopicListComponent } from './components/topics/topic-list/topic-list';
 import { TopicCreateComponent } from './components/topics/topic-create/topic-create';
 import { TopicDetailComponent } from './components/topics/topic-detail/topic-detail';
+import { SignupComponent } from './components/authentication/register/register';
+import { LoginComponent } from './components/authentication/login/login';
+import { VerifyEmailComponent } from './components/authentication/verify-email/verify-email';
+import { ForgotPasswordComponent } from './components/authentication/forget-password/forgetPassword';
+import { VerifyOtpComponent } from './components/authentication/verify-otp/verify-otp';
+import { ResetPasswordComponent } from './components/authentication/reset-password/reset-password';
+import { AuthGuard } from './common/guard/auth.guard';
+
 
 export const routes: Routes = [
-    
-    { path: '', component: DashboardComponent },
-  { path: 'books', component: BookListComponent },
-  { path: 'books/create', component: BookCreateComponent },
-  { path: 'books/:id', component: BookDetailComponent },
-  { path: 'topics', component: TopicListComponent },
-  { path: 'topics/create', component: TopicCreateComponent },
-  { path: 'topics/:id', component: TopicDetailComponent },
-  { path: 'issue', component: BookIssueComponent },
-  { path: 'return', component: BookReturnComponent }
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'signup', component: SignupComponent },
+  { path: 'login', component: LoginComponent },
+  {path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard]},
+  { path: 'verify-email', component: VerifyEmailComponent },
+  { path: 'forget-password', component: ForgotPasswordComponent },
+  { path: 'verify-otp', component: VerifyOtpComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'books', component: BookListComponent , canActivate: [AuthGuard]},
+  { path: 'books/create', component: BookCreateComponent , canActivate: [AuthGuard]},
+  { path: 'books/:id', component: BookDetailComponent , canActivate: [AuthGuard]},
+  { path: 'topics', component: TopicListComponent , canActivate: [AuthGuard]},
+  { path: 'topics/create', component: TopicCreateComponent , canActivate: [AuthGuard] },
+  { path: 'topics/:id', component: TopicDetailComponent , canActivate: [AuthGuard] },
+  { path: 'issue', component: BookIssueComponent , canActivate: [AuthGuard]},
+  { path: 'return', component: BookReturnComponent , canActivate: [AuthGuard]},
 ];
