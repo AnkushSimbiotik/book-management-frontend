@@ -1,57 +1,87 @@
-// src/app/services/topic.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { Topic } from '../models/topic.model';
+import { PaginationQuery } from '../common/pagination/pagination.interface';
+
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class TopicService {
-  private readonly STORAGE_KEY = 'library_topics'; // Changed to avoid conflict with books
+  private apiUrl = 'https://9a2363569f62.ngrok-free.app/topics'; // Match your backend ngrok URL
 
-  private initialTopics: Topic[] = [
-    { id: 1, genre: 'Fiction', description: 'Fictional literature' },
-    { id: 2, genre: 'Non-Fiction', description: 'Non-fictional literature' },
-    { id: 3, genre: 'Science', description: 'Scientific literature' },
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) {
-    // Initialize localStorage with initialTopics if empty
-    if (!localStorage.getItem(this.STORAGE_KEY)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.initialTopics));
-    }
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('accessToken');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  private getTopicsFromStorage(): Topic[] {
-    const topicJson = localStorage.getItem(this.STORAGE_KEY);
-    return topicJson ? JSON.parse(topicJson) : [];
+  getTopics(pagination?: PaginationQuery): Observable<{ topics: Topic[]; total: number }> {
+    const params = pagination ? { page: pagination.page.toString(), limit: pagination.limit.toString() } : {};
+    return this.http
+      .get<{ topics: Topic[]; total: number }>(this.apiUrl, {
+        headers: this.getHeaders(),
+      })
+      .pipe(
+        tap((response) => console.log('Topics fetched:', response)),
+        catchError((error) => {
+          console.error('Error fetching topics:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  private saveTopicsToStorage(topics: Topic[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(topics));
-  }
-
-  getTopics(): Observable<Topic[]> {
-    return of(this.getTopicsFromStorage());
-  }
-
-  getTopic(id: number): Observable<Topic> {
-    const topic = this.getTopicsFromStorage().find(topic => topic.id === id);
-    return of(topic!); // Assume topic exists; handle undefined in real app
+  getTopic(id: string): Observable<Topic> {
+    return this.http
+      .get<Topic>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Topic fetched:', response)),
+        catchError((error) => {
+          console.error('Error fetching topic:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   createTopic(topic: Topic): Observable<Topic> {
-    const topics = this.getTopicsFromStorage();
-    topic.id = topics.length > 0 ? Math.max(...topics.map(t => t.id)) + 1 : 1;
-    topics.push(topic);
-    this.saveTopicsToStorage(topics);
-    return of(topic);
+    return this.http
+      .post<Topic>(this.apiUrl, topic, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Topic created:', response)),
+        catchError((error) => {
+          console.error('Error creating topic:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  deleteTopic(id: number): Observable<void> {
-    const topics = this.getTopicsFromStorage().filter(topic => topic.id !== id);
-    this.saveTopicsToStorage(topics);
-    return of(void 0);
+  updateTopic(id: string, topic: Partial<Topic>): Observable<Topic> {
+    return this.http
+      .patch<Topic>(`${this.apiUrl}/${id}`, topic, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Topic updated:', response)),
+        catchError((error) => {
+          console.error('Error updating topic:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  deleteTopic(id: string): Observable<void> {
+    return this.http
+      .put<void>(`${this.apiUrl}/${id}`, {}, { headers: this.getHeaders() })
+      .pipe(
+        tap(() => console.log('Topic soft deleted:', id)),
+        catchError((error) => {
+          console.error('Error deleting topic:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }

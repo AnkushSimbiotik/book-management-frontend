@@ -8,7 +8,7 @@ import { BookDetailComponent } from './components/books/book-detail/book-detail'
 import { TopicListComponent } from './components/topics/topic-list/topic-list';
 import { TopicCreateComponent } from './components/topics/topic-create/topic-create';
 import { TopicDetailComponent } from './components/topics/topic-detail/topic-detail';
-import { SignupComponent } from './components/authentication/register/register';
+import { SignupComponent } from './components/authentication/sign-up/sign-up';
 import { LoginComponent } from './components/authentication/login/login';
 import { VerifyEmailComponent } from './components/authentication/verify-email/verify-email';
 import { ForgotPasswordComponent } from './components/authentication/forget-password/forgetPassword';

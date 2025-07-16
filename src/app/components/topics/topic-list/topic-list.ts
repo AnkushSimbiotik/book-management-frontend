@@ -20,10 +20,13 @@ topics: Topic[] = [];
   ) {}
 
   ngOnInit() {
-    this.topicService.getTopics().subscribe(topics => (this.topics = topics));
+     this.topicService.getTopics({ page: 1, limit: 100 }).subscribe({
+      next: (response) => (this.topics = response.topics),
+      error: () => (this.topics = []),
+    });
   }
 
-  viewTopic(id: number) {
+  viewTopic(id: string) {
     this.router.navigate(['/topics', id]);
   }
 

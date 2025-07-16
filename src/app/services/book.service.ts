@@ -1,65 +1,88 @@
-// src/app/services/book.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { Book } from '../models/book.model';
 import { Topic } from '../models/topic.model';
+import { PaginationQuery } from '../common/pagination/pagination.interface';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class BookService {
-  private readonly STORAGE_KEY = 'library_books';
+  private apiUrl = 'https://9a2363569f62.ngrok-free.app/books'; // Match your backend ngrok URL
 
-  private initialBooks: Book[] = [
-    { id: 1, title: 'Sample Book', author: 'John Doe', topic: [
-      { id: 1, genre: 'Fiction', description: 'Fictional literature' },
-      { id: 2, genre: 'Non-Fiction', description: 'Non-fictional literature' }
-    ] },
-    { id: 2, title: 'Another Book', author: 'Jane Smith', topic: [
-      { id: 1, genre: 'Fiction', description: 'Fictional literature' }
-    ] },
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) {
-    if (!localStorage.getItem(this.STORAGE_KEY)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.initialBooks));
-    }
-  }
-
-  private getBooksFromStorage(): Book[] {
-    const booksJson = localStorage.getItem(this.STORAGE_KEY);
-    return booksJson ? JSON.parse(booksJson) : [];
-  }
-
-  private saveBooksToStorage(books: Book[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(books));
-  }
-
-  getBooks(): Observable<Book[]> {
-    return of(this.getBooksFromStorage());
-  }
-
-  getBook(id: number): Observable<Book> {
-    const book = this.getBooksFromStorage().find(book => book.id === id);
-    return of(book!); // Assume book exists; handle undefined in real app
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('accessToken');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
   }
 
   createBook(book: Book): Observable<Book> {
-    const books = this.getBooksFromStorage();
-    book.id = books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
-    books.push(book);
-    this.saveBooksToStorage(books);
-    return of(book);
+    return this.http
+      .post<Book>(this.apiUrl, book, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Book created:', response)),
+        catchError((error) => {
+          console.error('Error creating book:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  deleteBook(id: number): Observable<void> {
-    const books = this.getBooksFromStorage().filter(book => book.id !== id);
-    this.saveBooksToStorage(books);
-    return of(void 0);
+  findAll(pagination: PaginationQuery): Observable<{ books: Book[]; total: number }> {
+    const params = { page: pagination.page.toString(), limit: pagination.limit.toString() };
+    return this.http
+      .get<{ books: Book[]; total: number }>(this.apiUrl, {
+        headers: this.getHeaders(),
+        params,
+      })
+      .pipe(
+        tap((response) => console.log('Books fetched:', response)),
+        catchError((error) => {
+          console.error('Error fetching books:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  getBooksByTopic(topicId: number): Observable<Book[]> {
-    return of(this.getBooksFromStorage().filter(book => book.topic.some(topic => topic.id === topicId)));
+  findOne(id: string): Observable<Book> {
+    return this.http
+      .get<Book>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Book fetched:', response)),
+        catchError((error) => {
+          console.error('Error fetching book:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  updateBook(id: string, book: Partial<Book>): Observable<Book> {
+    return this.http
+      .patch<Book>(`${this.apiUrl}/${id}`, book, { headers: this.getHeaders() })
+      .pipe(
+        tap((response) => console.log('Book updated:', response)),
+        catchError((error) => {
+          console.error('Error updating book:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  deleteBook(id: string): Observable<void> {
+    return this.http
+      .put<void>(`${this.apiUrl}/${id}`, {}, { headers: this.getHeaders() })
+      .pipe(
+        tap(() => console.log('Book soft deleted:', id)),
+        catchError((error) => {
+          console.error('Error deleting book:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }

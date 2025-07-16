@@ -1,6 +1,6 @@
 // src/app/models/topic.model.ts
 export interface Topic {
-  id: number;
+  id: string;
   genre: string;
   description: string;
 }

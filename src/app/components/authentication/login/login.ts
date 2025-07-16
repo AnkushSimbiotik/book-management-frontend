@@ -1,23 +1,34 @@
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule, NgIf } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports : [FormsModule , CommonModule , RouterLink],
   templateUrl: './login.html',
+  
+  imports: [FormsModule, RouterModule, CommonModule ],
 })
 export class LoginComponent {
   email: string = '';
   password: string = '';
+  errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService , router: Router) {}
 
   onSubmit() {
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Please fill in all fields';
+      return;
+    }
+
     this.authService.login(this.email, this.password).then(() => {
-      // Login handled in AuthService
+      this.errorMessage = ''; // Clear any previous error
+      this.authService.router.navigate(['/dashboard']);
+    }).catch((error) => {
+      this.errorMessage = 'Invalid email or password';
+      console.error('Login error:', error);
     });
   }
 }

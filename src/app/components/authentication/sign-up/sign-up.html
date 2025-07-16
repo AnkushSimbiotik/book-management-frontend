@@ -38,27 +38,52 @@
         />
       </div>
       <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          [(ngModel)]="user.confirmPassword"
+          name="confirmPassword"
+          required
+          minlength="8"
+          class="form-control"
+        />
+        <div *ngIf="signupForm.controls['confirmPassword']?.errors?.['required'] && signupForm.controls['confirmPassword']?.touched" class="text-danger">
+          Confirm Password is required.
+        </div>
+        <div *ngIf="signupForm.controls['confirmPassword']?.errors?.['minlength'] && signupForm.controls['confirmPassword']?.touched" class="text-danger">
+          Confirm Password must be at least 8 characters long.
+        </div>
+        <div *ngIf="signupForm.controls['confirmPassword']?.value !== signupForm.controls['password']?.value && signupForm.controls['confirmPassword']?.touched" class="text-danger">
+          Passwords do not match.
+        </div>
+      </div>
+      <div class="mb-3">
         <label for="role" class="form-label">Role</label>
         <select
           id="role"
           [(ngModel)]="user.role"
           name="role"
           class="form-select"
+          required
         >
           <option value="Customer">Customer</option>
           <option value="Admin">Admin</option>
         </select>
       </div>
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
       <button
         type="submit"
-        [disabled]="signupForm.invalid"
+        [disabled]="signupForm.invalid || user.password !== user.confirmPassword"
         class="btn btn-primary w-100"
       >
         Sign Up
       </button>
     </form>
     <p class="text-center mt-3">
-      Already have an account? <a  class="text-primary text-decoration-underline" [routerLink]="['/login']">Log in</a>
+      Already have an account? <a [routerLink]="['/login']" class="text-primary text-decoration-underline">Log in</a>
     </p>
   </div>
 </div>

@@ -2,8 +2,8 @@ import { Topic } from "./topic.model";
 
 // src/app/models/book.model.ts
 export interface Book {
-  id: number;
+  id: string;
   title: string;
   author: string;
-  topic : Topic[];
+  topic : string | string[];
 }

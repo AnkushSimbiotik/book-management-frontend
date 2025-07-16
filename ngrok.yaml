@@ -1,0 +1,8 @@
+version: "2"
+authtoken: <your-authtoken>
+tunnels:
+  angular-app:
+    addr: localhost:4200
+    host_header: rewrite
+    proto: http
+    subdomain: your-custom-subdomain # Optional, requires paid plan
