@@ -1,89 +1,48 @@
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
-  <div class="card shadow p-4 w-100" style="max-width: 400px;">
-    <h2 class="card-title text-center mb-4">Sign Up</h2>
-    <form (ngSubmit)="onSubmit()" #signupForm="ngForm">
-      <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input
-          type="text"
-          id="username"
-          [(ngModel)]="user.username"
-          name="username"
-          required
-          class="form-control"
-        />
-      </div>
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input
-          type="email"
-          id="email"
-          [(ngModel)]="user.email"
-          name="email"
-          required
-          email
-          class="form-control"
-        />
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input
-          type="password"
-          id="password"
-          [(ngModel)]="user.password"
-          name="password"
-          required
-          minlength="8"
-          class="form-control"
-        />
-      </div>
-      <div class="mb-3">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          [(ngModel)]="user.confirmPassword"
-          name="confirmPassword"
-          required
-          minlength="8"
-          class="form-control"
-        />
-        <div *ngIf="signupForm.controls['confirmPassword']?.errors?.['required'] && signupForm.controls['confirmPassword']?.touched" class="text-danger">
-          Confirm Password is required.
-        </div>
-        <div *ngIf="signupForm.controls['confirmPassword']?.errors?.['minlength'] && signupForm.controls['confirmPassword']?.touched" class="text-danger">
-          Confirm Password must be at least 8 characters long.
-        </div>
-        <div *ngIf="signupForm.controls['confirmPassword']?.value !== signupForm.controls['password']?.value && signupForm.controls['confirmPassword']?.touched" class="text-danger">
-          Passwords do not match.
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Sign Up</h3>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" formControlName="username" [class.is-invalid]="signUpForm.get('username')?.invalid && signUpForm.get('username')?.touched">
+                <div *ngIf="signUpForm.get('username')?.hasError('required')" class="invalid-feedback">Username is required</div>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" formControlName="email" [class.is-invalid]="signUpForm.get('email')?.invalid && signUpForm.get('email')?.touched">
+                <div *ngIf="signUpForm.get('email')?.hasError('required')" class="invalid-feedback">Email is required</div>
+              </div>
+              <div class="mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select class="form-control" id="role" formControlName="role" [class.is-invalid]="signUpForm.get('role')?.invalid && signUpForm.get('role')?.touched">
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
+                </select>
+                <div *ngIf="signUpForm.get('role')?.hasError('required')" class="invalid-feedback">Role is required</div>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" formControlName="password" [class.is-invalid]="signUpForm.get('password')?.invalid && signUpForm.get('password')?.touched">
+                <div *ngIf="signUpForm.get('password')?.hasError('required')" class="invalid-feedback">Password is required</div>
+              </div>
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" [class.is-invalid]="signUpForm.get('confirmPassword')?.invalid && signUpForm.get('confirmPassword')?.touched">
+                <div *ngIf="signUpForm.get('confirmPassword')?.hasError('required')" class="invalid-feedback">Confirm Password is required</div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100" [disabled]="signUpForm.invalid">Sign Up</button>
+              <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+              <div *ngIf="success" class="alert alert-success mt-3">{{ success }}</div>
+            </form>
+            <p class="text-center mt-3">Already have an account? <a routerLink="/login">Login</a></p>
+          </div>
         </div>
       </div>
-      <div class="mb-3">
-        <label for="role" class="form-label">Role</label>
-        <select
-          id="role"
-          [(ngModel)]="user.role"
-          name="role"
-          class="form-select"
-          required
-        >
-          <option value="Customer">Customer</option>
-          <option value="Admin">Admin</option>
-        </select>
-      </div>
-      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-        {{ errorMessage }}
-      </div>
-      <button
-        type="submit"
-        [disabled]="signupForm.invalid || user.password !== user.confirmPassword"
-        class="btn btn-primary w-100"
-      >
-        Sign Up
-      </button>
-    </form>
-    <p class="text-center mt-3">
-      Already have an account? <a [routerLink]="['/login']" class="text-primary text-decoration-underline">Log in</a>
-    </p>
+    </div>
   </div>
-</div>

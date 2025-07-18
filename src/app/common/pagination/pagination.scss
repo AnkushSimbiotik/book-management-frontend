@@ -1,0 +1,42 @@
+// src/app/common/pagination/pagination.scss
+.pagination {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 0;
+  list-style: none;
+  margin-top: 1rem;
+
+  .page-item {
+    cursor: pointer;
+    margin-right: 5px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    &.active a {
+      background-color: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+
+    a {
+      padding: 0.5rem 0.75rem;
+      color: #0d6efd;
+      text-decoration: none;
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+
+      &:hover {
+        background-color: #e9ecef;
+      }
+    }
+  }
+}

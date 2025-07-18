@@ -1,0 +1,26 @@
+<div class="card mt-3">
+    <div class="card-body">
+      <h4>Books Issued to User {{ userId }}</h4>
+      <div *ngIf="loading" class="alert alert-info">Loading...</div>
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+      <table class="table table-striped" *ngIf="!loading && issuedBooks.length">
+        <thead>
+          <tr>
+            <th>Book Title</th>
+            <th>Issue Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let issue of issuedBooks">
+            <td>{{ issue.bookTitle || 'Loading...' }}</td>
+            <td>{{ issue.issueDate | date:'medium' }}</td>
+            <td>{{ issue.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!loading && !issuedBooks.length" class="alert alert-warning">
+        No books issued to this user.
+      </div>
+    </div>
+  </div>

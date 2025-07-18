@@ -1,0 +1,107 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Issue Book</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="issueForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="userId" class="form-label">User ID</label>
+              <input
+                type="text"
+                class="form-control"
+                id="userId"
+                formControlName="userId"
+                [class.is-invalid]="issueForm.get('userId')?.invalid && issueForm.get('userId')?.touched"
+              />
+              <div
+                *ngIf="issueForm.get('userId')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                User ID is required
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="bookId" class="form-label">Book ID</label>
+              <input
+                type="text"
+                class="form-control"
+                id="bookId"
+                formControlName="bookId"
+                [class.is-invalid]="issueForm.get('bookId')?.invalid && issueForm.get('bookId')?.touched"
+              />
+              <div
+                *ngIf="issueForm.get('bookId')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Book ID is required
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary w-100"
+              [disabled]="issueForm.invalid"
+            >
+              Issue Book
+            </button>
+            <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+            <div *ngIf="success" class="alert alert-success mt-3">
+              {{ success }}
+            </div>
+          </form>
+          <div class="mt-4">
+            <h5>Search Issued Books by User ID</h5>
+            <div class="input-group mb-2">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter User ID"
+                [(ngModel)]="searchUserId"
+              />
+              <button
+                class="btn btn-secondary"
+                (click)="onSearch()"
+                [disabled]="!searchUserId"
+              >
+                Search
+              </button>
+            </div>
+            <div *ngIf="issuedBooks && issuedBooks.length > 0">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Book ID</th>
+                    <th>Issue Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let book of issuedBooks">
+                    <td>{{ book.bookId }}</td>
+                    <td>{{ book.issueDate | date:'short' }}</td>
+                    <td>{{ book.status }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <app-pagination
+                [currentPage]="issuedBooksPage"
+                [totalPages]="issuedBooksTotalPages"
+                (pageChange)="onIssuedBooksPageChange($event)"
+              >
+              </app-pagination>
+            </div>
+            <div
+              *ngIf="issuedBooks && issuedBooks.length === 0 && searchUserId"
+            >
+              <div class="alert alert-warning">
+                No issued books found for this user.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

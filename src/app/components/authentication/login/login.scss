@@ -1,0 +1,14 @@
+.card {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.form-control.is-invalid, .form-select.is-invalid {
+  border-color: #dc3545;
+}
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}

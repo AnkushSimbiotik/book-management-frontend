@@ -1,29 +1,47 @@
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
-  <div class="card shadow p-4 w-100" style="max-width: 400px;">
-    <h2 class="card-title text-center mb-4">Verify OTP</h2>
-    <p class="mb-3">An OTP has been sent to {{ email }}. Please enter it below.</p>
-    <form (ngSubmit)="onSubmit()" #otpForm="ngForm">
-      <div class="mb-3">
-        <label for="otp" class="form-label">OTP</label>
-        <input
-          type="text"
-          id="otp"
-          [(ngModel)]="otp"
-          name="otp"
-          required
-          class="form-control"
-        />
+```html
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Verify OTP</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="verifyOtpForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                formControlName="email"
+                [class.is-invalid]="verifyOtpForm.get('email')?.invalid && verifyOtpForm.get('email')?.touched"
+              />
+              <div *ngIf="verifyOtpForm.get('email')?.invalid && verifyOtpForm.get('email')?.touched" class="invalid-feedback">
+                Please enter a valid email.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="otp" class="form-label">OTP</label>
+              <input
+                type="text"
+                id="otp"
+                class="form-control"
+                formControlName="otp"
+                [class.is-invalid]="verifyOtpForm.get('otp')?.invalid && verifyOtpForm.get('otp')?.touched"
+              />
+              <div *ngIf="verifyOtpForm.get('otp')?.invalid && verifyOtpForm.get('otp')?.touched" class="invalid-feedback">
+                OTP must be 6 digits.
+              </div>
+            </div>
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Verify OTP
+            </button>
+          </form>
+        </div>
       </div>
-      <button
-        type="submit"
-        [disabled]="otpForm.invalid"
-        class="btn btn-primary w-100"
-      >
-        Verify OTP
-      </button>
-    </form>
-    <p class="text-center mt-3">
-      Back to <a routerLink="/forgot-password" class="text-primary text-decoration-underline">Forgot Password</a>
-    </p>
+    </div>
   </div>
 </div>

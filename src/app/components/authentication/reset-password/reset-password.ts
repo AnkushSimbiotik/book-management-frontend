@@ -1,31 +1,54 @@
-import { Component, OnInit } from '@angular/core';
-
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../auth.service';
+import { ResetPasswordDto } from '../../../interface/authenticationInterface/auth.interface';
 
 @Component({
   selector: 'app-reset-password',
-  imports : [CommonModule , FormsModule],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HttpClientModule],
+  providers: [AuthService],
   templateUrl: './reset-password.html',
 })
-export class ResetPasswordComponent implements OnInit {
-  email: string = '';
-  newPassword: string = '';
-  confirmPassword: string = '';
+export class ResetPasswordComponent {
+  resetForm: FormGroup;
+  error: string | null = null;
+  success: string | null = null;
 
   constructor(
+    private fb: FormBuilder,
     private authService: AuthService,
-    private route: ActivatedRoute,
     private router: Router
-  ) {}
-
-  ngOnInit() {
-    this.email = this.route.snapshot.queryParams['email'] || '';
+  ) {
+    this.resetForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+    });
   }
 
-  onSubmit() {
-    this.authService.resetPassword(this.email, this.newPassword, this.confirmPassword).subscribe();
+  onSubmit(): void {
+    if (this.resetForm.valid) {
+      const dto: ResetPasswordDto = this.resetForm.value;
+      this.authService.resetPassword(dto).subscribe({
+        next: (response) => {
+          this.success = response.message;
+          this.error = null;
+          setTimeout(() => this.router.navigate(['/login']), 3000);
+        },
+        error: (err) => {
+          this.error = err.error?.message || 'Password reset failed';
+          this.success = null;
+        },
+      });
+    }
   }
 }

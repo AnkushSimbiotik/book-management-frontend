@@ -1,0 +1,43 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Edit Topic</h3>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loading" class="alert alert-info">Loading...</div>
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+            <form [formGroup]="topicForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+              <div class="mb-3">
+                <label for="genre" class="form-label">Genre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="genre"
+                  formControlName="genre"
+                  [class.is-invalid]="topicForm.get('genre')?.invalid && topicForm.get('genre')?.touched"
+                >
+                <div *ngIf="topicForm.get('genre')?.hasError('required')" class="invalid-feedback">
+                  Genre is required
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  formControlName="description"
+                  [class.is-invalid]="topicForm.get('description')?.invalid && topicForm.get('description')?.touched"
+                ></textarea>
+                <div *ngIf="topicForm.get('description')?.hasError('required')" class="invalid-feedback">
+                  Description is required
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100" [disabled]="topicForm.invalid">Update</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

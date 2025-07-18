@@ -1,34 +1,55 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule, NgIf } from '@angular/common';
-import { AuthService } from '../../../services/auth.service';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.html',
-  
-  imports: [FormsModule, RouterModule, CommonModule ],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
 })
 export class LoginComponent {
-  email: string = '';
-  password: string = '';
-  errorMessage: string = '';
+  loginForm: FormGroup;
+  error: string | null = null;
 
-  constructor(private authService: AuthService , router: Router) {}
-
-  onSubmit() {
-    if (!this.email || !this.password) {
-      this.errorMessage = 'Please fill in all fields';
-      return;
-    }
-
-    this.authService.login(this.email, this.password).then(() => {
-      this.errorMessage = ''; // Clear any previous error
-      this.authService.router.navigate(['/dashboard']);
-    }).catch((error) => {
-      this.errorMessage = 'Invalid email or password';
-      console.error('Login error:', error);
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
     });
+  }
+
+  onSubmit(event: SubmitEvent): void {
+    event.preventDefault();
+    if (this.loginForm.valid) {
+      const credentials = this.loginForm.value;
+      this.authService.signIn(credentials).subscribe({
+        next: (response) => {
+          console.log('Login Response:', response); 
+          localStorage.setItem('accessToken', response.accessToken);
+          localStorage.setItem('refreshToken', response.refreshToken);
+          this.authService.isAuthenticated$.subscribe((isAuthenticated) => {
+            if (isAuthenticated) {
+              this.router.navigate(['/dashboard']).then(() => {
+                console.log('Navigated to dashboard');
+              }).catch(err => {
+                console.error('Navigation failed:', err);
+              });
+            }
+          });
+          this.error = null;
+        },
+        error: (err) => {
+          console.error('Login Error:', err); 
+          this.error = err.error?.message || 'Invalid email or password';
+        }
+      });
+    }
   }
 }

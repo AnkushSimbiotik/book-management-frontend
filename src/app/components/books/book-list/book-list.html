@@ -1,32 +1,151 @@
-<!-- src/app/components/books/book-list/book-list.component.html -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="text-primary">Books</h2>
-  <a routerLink="/books/create" class="btn btn-primary" ngbTooltip="Add a new book">Create New Book</a>
-</div>
-<div class="alert alert-success alert-dismissible fade show" role="alert" *ngIf="books.length === 0">
-  No books available. Start by creating a new book!
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-<div class="table-responsive">
-  <table class="table table-hover">
-    <thead class="table-light">
-      <tr>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Topics</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let book of books" class="animate__animated animate__fadeIn">
-        <td>{{ book.title }}</td>
-        <td>{{ book.author }}</td>
-        <td>{{ getTopicNames(book.topic) }}</td>
-        <td>
-          <button class="btn btn-outline-info btn-sm me-2" (click)="viewBook(book.id)" ngbTooltip="View book details">View</button>
-          <button class="btn btn-outline-danger btn-sm" (click)="deleteBook(book.id)" ngbTooltip="Delete book">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="container mt-5">
+  <h2>Books List</h2>
+
+  <!-- Create Book Button -->
+  <div class="mb-3">
+    <a class="btn btn-success" routerLink="/books/create">Create Book</a>
+  </div>
+
+  <!-- Search and Sort -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        placeholder="Search books..."
+      />
+    </div>
+    <div class="col-md-6">
+      <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
+        <option value="">Sort by</option>
+        <option value="title">Title</option>
+        <option value="author">Author</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading or Error State -->
+  <div *ngIf="loading" class="alert alert-info">Loading books...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Books Table -->
+  <div *ngIf="books.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Topics</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let book of books">
+          <!-- Normal View Mode -->
+          <ng-container *ngIf="!isEditing(book)">
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ getTopicNames(book.topics) }}</td>
+            <td>
+              <a
+                [routerLink]="['/books', getBookId(book)]"
+                class="btn btn-info btn-sm me-2"
+                *ngIf="getBookId(book)"
+                >View</a
+              >
+              <button
+                class="btn btn-warning btn-sm me-2"
+                (click)="startEdit(book)"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="deleteBook(getBookId(book)!)"
+                *ngIf="getBookId(book)"
+              >
+                Delete
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Edit Mode -->
+          <ng-container *ngIf="isEditing(book)">
+            <td>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [formControl]="titleControl"
+                [class.is-invalid]="editForm.get('title')?.invalid && editForm.get('title')?.touched"
+              />
+              <div
+                *ngIf="editForm.get('title')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Title is required
+              </div>
+            </td>
+            <td>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                [formControl]="authorControl"
+                [class.is-invalid]="editForm.get('author')?.invalid && editForm.get('author')?.touched"
+              />
+              <div
+                *ngIf="editForm.get('author')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Author is required
+              </div>
+            </td>
+            <td>
+              <select
+                class="form-select form-select-sm"
+                [formControl]="topicsControl"
+                multiple
+                [class.is-invalid]="editForm.get('topics')?.invalid && editForm.get('topics')?.touched"
+              >
+                <option *ngFor="let topic of topics" [value]="topic.id">
+                  {{ topic.genre || 'Unknown Topic' }}
+                </option>
+              </select>
+              <small class="text-muted">Hold Ctrl to select multiple</small>
+              <div
+                *ngIf="editForm.get('topics')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                At least one topic is required
+              </div>
+            </td>
+            <td>
+              <button
+                class="btn btn-success btn-sm me-2"
+                (click)="saveEdit()"
+                [disabled]="editForm.invalid"
+              >
+                Save
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                Cancel
+              </button>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="books.length === 0 && !loading" class="alert alert-warning">
+    No books found.
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
 </div>

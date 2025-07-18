@@ -1,0 +1,54 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center">Return Book</h3>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="returnForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label for="userId" class="form-label">User ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="userId"
+                  formControlName="userId"
+                  [class.is-invalid]="returnForm.get('userId')?.invalid && returnForm.get('userId')?.touched"
+                >
+                <div *ngIf="returnForm.get('userId')?.hasError('required')" class="invalid-feedback">
+                  User ID is required
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="bookId" class="form-label">Book ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="bookId"
+                  formControlName="bookId"
+                  [class.is-invalid]="returnForm.get('bookId')?.invalid && returnForm.get('bookId')?.touched"
+                >
+                <div *ngIf="returnForm.get('bookId')?.hasError('required')" class="invalid-feedback">
+                  Book ID is required
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100" [disabled]="returnForm.invalid">Return Book</button>
+              <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+              <div *ngIf="success" class="alert alert-success mt-3">{{ success }}</div>
+            </form>
+            <div class="mt-3">
+              <input
+                type="text"
+                class="form-control mb-2"
+                placeholder="Search by User ID"
+                [(ngModel)]="searchUserId"
+                (ngModelChange)="onSearch()"
+              />
+              <app-issued-books-list [userId]="searchUserId" *ngIf="searchUserId"></app-issued-books-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

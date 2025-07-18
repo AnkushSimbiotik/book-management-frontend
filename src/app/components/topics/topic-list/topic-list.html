@@ -1,47 +1,109 @@
-<!-- src/app/components/topics/topic-list/topic-list.component.html -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="text-primary">Topics</h2>
-  <a routerLink="/topics/create" class="btn btn-primary" ngbTooltip="Add a new topic">Create New Topic</a>
-</div>
-<div
-  class="alert alert-success alert-dismissible fade show"
-  role="alert"
-  *ngIf="topics.length === 0"
->
-  No topics available. Start by creating a new topic!
-  <button
-    type="button"
-    class="btn-close"
-    data-bs-dismiss="alert"
-    aria-label="Close"
-  ></button>
-</div>
-<div class="table-responsive">
-  <table class="table table-hover">
-    <thead class="table-light">
-      <tr>
-        <th>Name</th> <!-- Changed from Genre to Name -->
-        <th>Description</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        *ngFor="let topic of topics"
-        class="animate__animated animate__fadeIn"
-      >
-        <td>{{ topic.genre }}</td> <!-- Changed from topic.genre to topic.name -->
-        <td>{{ topic.description }}</td>
-        <td>
-          <button
-            class="btn btn-outline-info btn-sm"
-            (click)="viewTopic(topic.id)"
-            ngbTooltip="View topic details"
-          >
-            View
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="container mt-5">
+  <h2>Topics List</h2>
+
+  <!-- Create Topic Button -->
+  <div class="mb-3">
+    <a class="btn btn-success" routerLink="/topics/create">Create Topic</a>
+  </div>
+
+  <!-- Search and Sort -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        placeholder="Search topics..."
+      />
+    </div>
+    <div class="col-md-6">
+      <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
+        <option value="">Sort by</option>
+        <option value="title">Title</option>
+        <option value="createdAt">Date</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading or Error State -->
+  <div *ngIf="loading" class="alert alert-info">Loading topics...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Topics Table -->
+  <div *ngIf="topics.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let topic of topics">
+          <ng-container *ngIf="!isEditing(topic); else editRow">
+            <td>{{ topic.genre }}</td>
+            <td>{{ topic.createdAt | date }}</td>
+            <td>
+              
+              <a
+                [routerLink]="['/topics', topic.id]"
+                class="btn btn-info btn-sm me-2"
+                >View</a
+              >
+              <button
+                class="btn btn-warning btn-sm me-2"
+                (click)="startEdit(topic)"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="deleteTopic(topic.id)"
+              >
+                Delete
+              </button>
+            </td>
+          </ng-container>
+          <ng-template #editRow>
+            <td>
+              <input
+                class="form-control form-control-sm"
+                [formControl]="genreControl"
+              />
+            </td>
+            <td>
+              <input
+                class="form-control form-control-sm"
+                [formControl]="descriptionControl"
+              />
+            </td>
+            <td>
+              <button
+                class="btn btn-success btn-sm me-2"
+                (click)="saveEdit()"
+                [disabled]="editForm.invalid"
+              >
+                Save
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                Cancel
+              </button>
+            </td>
+          </ng-template>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="topics?.length === 0" class="alert alert-warning">
+    No topics found.
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
 </div>

@@ -1,45 +1,41 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { Topic } from '../../../models/topic.model';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TopicService } from '../../../services/topic.service';
-import { Router, RouterLink } from '@angular/router';
+
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TopicsService } from '../topic.service';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-topic-create',
-  imports: [ReactiveFormsModule , CommonModule ],
+  selector: 'app-create-topic',
+  imports: [CommonModule, ReactiveFormsModule],
+  providers: [TopicsService],
   templateUrl: './topic-create.html',
+  styleUrls: ['./topic-create.scss'],
 })
-export class TopicCreateComponent {
-@Output() topicCreated = new EventEmitter<Topic>();
+export class CreateTopicComponent {
   topicForm: FormGroup;
-  showSuccess: boolean = false;
+  error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private topicService: TopicService,
+    private topicsService: TopicsService,
     private router: Router
   ) {
     this.topicForm = this.fb.group({
-      name: ['', Validators.required],
-      description: ['', Validators.required],
+      genre: ['', Validators.required],
+      description: ['', Validators.required]
     });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.topicForm.valid) {
-      this.topicService.createTopic(this.topicForm.value).subscribe(topic => {
-        this.topicCreated.emit(topic);
-        this.showSuccess = true;
-        setTimeout(() => {
-          this.showSuccess = false;
-          this.topicForm.reset();
-          const modal = document.getElementById('createTopicModal');
-          if (modal) {
-            const bootstrap = (window as any).bootstrap;
-            bootstrap.Modal.getInstance(modal)?.hide();
-          }
-        }, 2000);
+      this.topicsService.createTopic(this.topicForm.value).subscribe({
+        next: () => {
+          this.router.navigate(['/topics']);
+        },
+        error: (err) => {
+          this.error = err.error?.message || 'Failed to create topic';
+        }
       });
     }
   }
