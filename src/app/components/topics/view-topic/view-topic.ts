@@ -25,11 +25,13 @@ export class ViewTopicComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     console.log('Topic ID from route:', id); // Debug log
-    if (!id) {
-      this.error = 'Invalid or missing topic ID';
+    
+    if (!id || id === 'undefined' || id === 'null') {
+      this.error = `Invalid or missing topic ID: ${id}`;
       this.loading = false;
       return;
     }
+    
     this.loading = true;
     this.topicsService.getTopic(id).subscribe({
       next: (topic) => {

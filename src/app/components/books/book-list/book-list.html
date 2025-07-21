@@ -9,19 +9,41 @@
   <!-- Search and Sort -->
   <div class="row mb-3">
     <div class="col-md-6">
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="searchQuery"
-        (keyup.enter)="onSearch()"
-        placeholder="Search books..."
-      />
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          placeholder="Search books by title or author..."
+        />
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="onSearch()"
+          [disabled]="loading"
+        >
+          <i class="bi bi-search"></i> Search
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="clearSearch()"
+          [disabled]="!searchQuery"
+        >
+          Clear
+        </button>
+      </div>
     </div>
     <div class="col-md-6">
       <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
         <option value="">Sort by</option>
-        <option value="title">Title</option>
-        <option value="author">Author</option>
+        <option value="title:asc">Title (A-Z)</option>
+        <option value="title:desc">Title (Z-A)</option>
+        <option value="author:asc">Author (A-Z)</option>
+        <option value="author:desc">Author (Z-A)</option>
+        <option value="createdAt:desc">Newest First</option>
+        <option value="createdAt:asc">Oldest First</option>
       </select>
     </div>
   </div>
@@ -29,6 +51,18 @@
   <!-- Loading or Error State -->
   <div *ngIf="loading" class="alert alert-info">Loading books...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Search Results Feedback -->
+  <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
+    <i class="bi bi-search"></i>
+    Search results for "{{ searchQuery }}": {{ books.length }} book(s) found
+    <button
+      class="btn btn-sm btn-outline-secondary ms-2"
+      (click)="clearSearch()"
+    >
+      Clear Search
+    </button>
+  </div>
 
   <!-- Books Table -->
   <div *ngIf="books.length > 0" class="table-responsive">
@@ -144,6 +178,7 @@
 
   <!-- Pagination -->
   <app-pagination
+    *ngIf="totalPages > 1"
     [currentPage]="currentPage"
     [totalPages]="totalPages"
     (pageChange)="onPageChange($event)"

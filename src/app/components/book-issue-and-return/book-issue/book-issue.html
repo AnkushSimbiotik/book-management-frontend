@@ -69,6 +69,10 @@
               </button>
             </div>
             <div *ngIf="issuedBooks && issuedBooks.length > 0">
+              <div class="alert alert-info">
+                <i class="bi bi-search"></i>
+                Showing {{ issuedBooks.length }} of {{ issuedBooksTotal }} issued book(s) for user {{ searchUserId }}
+              </div>
               <table class="table table-bordered">
                 <thead>
                   <tr>

@@ -17,6 +17,7 @@ import { EditBookComponent } from './components/books/edit-books/edit-books';
 import { EditTopicComponent } from './components/topics/edit-topic/edit-topic';
 import { BookIssueComponent } from './components/book-issue-and-return/book-issue/book-issue';
 import { BookReturnComponent } from './components/book-issue-and-return/book-return/book-return';
+import { IssuedBooksListComponent } from './components/book-issue-and-return/issued-books-list/issued-books-list';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -36,5 +37,6 @@ export const routes: Routes = [
   { path: 'topics/:id/edit', component: EditTopicComponent , canActivate: [AuthGuard] },
   { path: 'book-issue', component: BookIssueComponent , canActivate: [AuthGuard] },
   { path: 'book-return', component: BookReturnComponent , canActivate: [AuthGuard] },
+  { path: 'issued-books', component: IssuedBooksListComponent , canActivate: [AuthGuard] },
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];

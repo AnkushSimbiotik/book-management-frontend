@@ -15,8 +15,11 @@
                 id="title"
                 formControlName="title"
                 [class.is-invalid]="bookForm.get('title')?.invalid && bookForm.get('title')?.touched"
+              />
+              <div
+                *ngIf="bookForm.get('title')?.hasError('required')"
+                class="invalid-feedback"
               >
-              <div *ngIf="bookForm.get('title')?.hasError('required')" class="invalid-feedback">
                 Title is required
               </div>
             </div>
@@ -28,37 +31,61 @@
                 id="author"
                 formControlName="author"
                 [class.is-invalid]="bookForm.get('author')?.invalid && bookForm.get('author')?.touched"
+              />
+              <div
+                *ngIf="bookForm.get('author')?.hasError('required')"
+                class="invalid-feedback"
               >
-              <div *ngIf="bookForm.get('author')?.hasError('required')" class="invalid-feedback">
                 Author is required
               </div>
             </div>
             <div class="mb-3">
               <label for="topics" class="form-label">Topics</label>
-              <div *ngIf="loading" class="alert alert-info mt-2">Loading topics...</div>
-              <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
-              <select 
-                class="form-select" 
+              <div *ngIf="loading" class="alert alert-info mt-2">
+                Loading topics...
+              </div>
+              <div *ngIf="error" class="alert alert-danger mt-2">
+                {{ error }}
+              </div>
+              <select
+                class="form-select"
                 id="topics"
                 formControlName="topics"
                 multiple
                 [class.is-invalid]="bookForm.get('topics')?.invalid && bookForm.get('topics')?.touched"
                 *ngIf="topics.length > 0"
               >
-                <option 
-                  *ngFor="let topic of topics" 
-                  [value]="topic.id"
+                <option
+                  *ngFor="let topic of topics"
+                  [value]="getTopicId(topic)"
+                  [disabled]="!getTopicId(topic)"
                 >
                   {{ topic.genre || 'Unnamed Topic' }}
                 </option>
               </select>
-              <div *ngIf="bookForm.get('topics')?.hasError('required') && bookForm.get('topics')?.touched" class="invalid-feedback">
+              <div
+                *ngIf="bookForm.get('topics')?.hasError('required') && bookForm.get('topics')?.touched"
+                class="invalid-feedback"
+              >
                 At least one topic is required
               </div>
-              <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple topics</small>
+              <small class="form-text text-muted"
+                >Hold Ctrl (Cmd on Mac) to select multiple topics</small
+              >
             </div>
-            <button type="submit" class="btn btn-primary w-100" [disabled]="bookForm.invalid || loading">
-              Create
+            <button
+              type="submit"
+              class="btn btn-primary w-100"
+              [disabled]="bookForm.invalid || loading || topics.length === 0"
+            >
+              <span
+                *ngIf="loading"
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              {{ loading ? 'Creating...' : (topics.length === 0 ? 'Loading
+              Topics...' : 'Create Book') }}
             </button>
             <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
           </form>

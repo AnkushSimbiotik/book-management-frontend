@@ -1,26 +1,122 @@
-<div class="card mt-3">
-    <div class="card-body">
-      <h4>Books Issued to User {{ userId }}</h4>
-      <div *ngIf="loading" class="alert alert-info">Loading...</div>
-      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-      <table class="table table-striped" *ngIf="!loading && issuedBooks.length">
-        <thead>
-          <tr>
-            <th>Book Title</th>
-            <th>Issue Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let issue of issuedBooks">
-            <td>{{ issue.bookTitle || 'Loading...' }}</td>
-            <td>{{ issue.issueDate | date:'medium' }}</td>
-            <td>{{ issue.status }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="!loading && !issuedBooks.length" class="alert alert-warning">
-        No books issued to this user.
+<div class="container mt-5">
+  <h2>All Issued Books</h2>
+
+  <!-- Search and Sort -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          placeholder="Search by user name, book title, or status..."
+        />
+        <button 
+          class="btn btn-outline-secondary" 
+          type="button"
+          (click)="onSearch()"
+          [disabled]="loading"
+        >
+          <i class="bi bi-search"></i> Search
+        </button>
+        <button 
+          class="btn btn-outline-secondary" 
+          type="button"
+          (click)="clearSearch()"
+          [disabled]="!searchQuery"
+        >
+          Clear
+        </button>
       </div>
     </div>
+    <div class="col-md-6">
+      <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
+        <option value="">Sort by</option>
+        <option value="issueDate:desc">Issue Date (Newest First)</option>
+        <option value="issueDate:asc">Issue Date (Oldest First)</option>
+        <option value="status:asc">Status (A-Z)</option>
+        <option value="status:desc">Status (Z-A)</option>
+        <option value="estimatedReturnDate:asc">Return Date (Earliest First)</option>
+        <option value="estimatedReturnDate:desc">Return Date (Latest First)</option>
+      </select>
+    </div>
   </div>
+
+  <!-- Loading or Error State -->
+  <div *ngIf="loading" class="alert alert-info">Loading issued books...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Search Results Feedback -->
+  <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
+    <i class="bi bi-search"></i>
+    Search results for "{{ searchQuery }}": {{ issuedBooks.length }} book(s) found
+    <button 
+      class="btn btn-sm btn-outline-secondary ms-2" 
+      (click)="clearSearch()"
+    >
+      Clear Search
+    </button>
+  </div>
+
+  <!-- Issued Books Table -->
+  <div *ngIf="issuedBooks.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Book</th>
+          <th>Issue Date</th>
+          <th>Estimated Return</th>
+          <th>Status</th>
+          <th>Return Date</th>
+          <th>Overdue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let issue of issuedBooks" [class]="getOverdueClass(issue)">
+          <td>
+            <strong>{{ getUserDisplay(issue) }}</strong>
+          </td>
+          <td>
+            <strong>{{ getBookDisplay(issue) }}</strong>
+          </td>
+          <td>{{ issue.issueDate | date:'short' }}</td>
+          <td>{{ issue.estimatedReturnDate | date:'short' }}</td>
+          <td>
+            <span [class]="getStatusBadgeClass(issue.status)">
+              {{ issue.status }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="issue.returnDate">{{ issue.returnDate | date:'short' }}</span>
+            <span *ngIf="!issue.returnDate" class="text-muted">-</span>
+          </td>
+          <td>
+            <span *ngIf="getDaysOverdue(issue) > 0" class="badge bg-danger">
+              {{ getDaysOverdue(issue) }} day(s) overdue
+            </span>
+            <span *ngIf="getDaysOverdue(issue) === 0 && issue.status === 'Issued'" class="badge bg-success">
+              On time
+            </span>
+            <span *ngIf="issue.status === 'Returned'" class="badge bg-secondary">
+              Returned
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="issuedBooks.length === 0 && !loading" class="alert alert-warning">
+    No issued books found.
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    *ngIf="totalPages > 1"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
+</div>

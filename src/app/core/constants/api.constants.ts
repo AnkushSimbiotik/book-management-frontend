@@ -25,6 +25,7 @@ export const API_CONSTANTS = {
     BY_ID: (_id: string) => `api/topics/${_id}`,
   },
   BOOK_ISSUES: {
+    BASE: 'api/book-issue',
     ISSUE: 'api/book-issue/issue',
     RETURN: 'api/book-issue/return',
     BY_USER: (userId: string) => `api/book-issue/user/${userId}`,

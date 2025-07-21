@@ -15,6 +15,7 @@ import { Book } from '../../../interface/books.interface';
 })
 export class ViewBookComponent implements OnInit {
   book: Book | null = null;
+  allTopics: any[] = []; // Store all topics for mapping
   loading: boolean = false;
   error: string | null = null;
 
@@ -26,19 +27,19 @@ export class ViewBookComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.error = null;
-    
+
     // Debug: Log all route parameters
     console.log('All route params:', this.route.snapshot.paramMap);
     console.log('Route params keys:', this.route.snapshot.paramMap.keys);
-    
+
     const _id = this.route.snapshot.paramMap.get('_id');
     const id = this.route.snapshot.paramMap.get('id'); // Try both
-    
+
     console.log('_id param:', _id);
     console.log('id param:', id);
-    
+
     const bookId = _id || id; // Use whichever exists
-    
+
     if (bookId && bookId !== 'undefined') {
       this.booksService.getBook(bookId).subscribe({
         next: (book) => {

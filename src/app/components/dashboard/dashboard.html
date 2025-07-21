@@ -2,18 +2,28 @@
   <h2 class="text-center mb-4">Dashboard</h2>
   <div class="row mb-4">
     <div class="col-md-6">
-      <div class="card text-white bg-primary">
+      <div
+        class="card text-white bg-primary"
+        style="cursor: pointer"
+        (click)="viewAllBooks()"
+      >
         <div class="card-body">
           <h5 class="card-title">Total Books</h5>
           <p class="card-text display-4">{{ totalBooks ?? 'Loading...' }}</p>
+          <small class="text-light">Click to view all books</small>
         </div>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="card text-white bg-success">
+      <div
+        class="card text-white bg-success"
+        style="cursor: pointer"
+        (click)="viewAllTopics()"
+      >
         <div class="card-body">
           <h5 class="card-title">Total Topics</h5>
           <p class="card-text display-4">{{ totalTopics ?? 'Loading...' }}</p>
+          <small class="text-light">Click to view all topics</small>
         </div>
       </div>
     </div>

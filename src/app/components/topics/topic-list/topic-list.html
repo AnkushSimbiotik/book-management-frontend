@@ -9,19 +9,39 @@
   <!-- Search and Sort -->
   <div class="row mb-3">
     <div class="col-md-6">
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="searchQuery"
-        (keyup.enter)="onSearch()"
-        placeholder="Search topics..."
-      />
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          placeholder="Search topics by genre..."
+        />
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="onSearch()"
+          [disabled]="loading"
+        >
+          <i class="bi bi-search"></i> Search
+        </button>
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="clearSearch()"
+          [disabled]="!searchQuery"
+        >
+          Clear
+        </button>
+      </div>
     </div>
     <div class="col-md-6">
       <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
         <option value="">Sort by</option>
-        <option value="title">Title</option>
-        <option value="createdAt">Date</option>
+        <option value="genre:asc">Genre (A-Z)</option>
+        <option value="genre:desc">Genre (Z-A)</option>
+        <option value="createdAt:desc">Newest First</option>
+        <option value="createdAt:asc">Oldest First</option>
       </select>
     </div>
   </div>
@@ -29,6 +49,18 @@
   <!-- Loading or Error State -->
   <div *ngIf="loading" class="alert alert-info">Loading topics...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Search Results Feedback -->
+  <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
+    <i class="bi bi-search"></i>
+    Search results for "{{ searchQuery }}": {{ topics.length }} topic(s) found
+    <button
+      class="btn btn-sm btn-outline-secondary ms-2"
+      (click)="clearSearch()"
+    >
+      Clear Search
+    </button>
+  </div>
 
   <!-- Topics Table -->
   <div *ngIf="topics.length > 0" class="table-responsive">
@@ -46,24 +78,29 @@
             <td>{{ topic.genre }}</td>
             <td>{{ topic.createdAt | date }}</td>
             <td>
-              
               <a
-                [routerLink]="['/topics', topic.id]"
+                *ngIf="getTopicId(topic)"
+                [routerLink]="['/topics', getTopicId(topic)]"
                 class="btn btn-info btn-sm me-2"
                 >View</a
               >
               <button
+                *ngIf="getTopicId(topic)"
                 class="btn btn-warning btn-sm me-2"
                 (click)="startEdit(topic)"
               >
                 Edit
               </button>
               <button
+                *ngIf="getTopicId(topic)"
                 class="btn btn-danger btn-sm"
-                (click)="deleteTopic(topic.id)"
+                (click)="deleteTopic(getTopicId(topic))"
               >
                 Delete
               </button>
+              <span *ngIf="!getTopicId(topic)" class="text-muted"
+                >No ID available</span
+              >
             </td>
           </ng-container>
           <ng-template #editRow>
@@ -102,6 +139,7 @@
 
   <!-- Pagination -->
   <app-pagination
+    *ngIf="totalPages > 1"
     [currentPage]="currentPage"
     [totalPages]="totalPages"
     (pageChange)="onPageChange($event)"

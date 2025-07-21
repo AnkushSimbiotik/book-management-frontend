@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -28,7 +28,7 @@ import { PaginationComponent } from '../../../common/pagination/pagination';
   templateUrl: './book-issue.html',
   styleUrls: ['./book-issue.scss'],
 })
-export class BookIssueComponent {
+export class BookIssueComponent implements OnInit {
   issueForm: FormGroup;
   error: string | null = null;
   success: string | null = null;
@@ -49,20 +49,44 @@ export class BookIssueComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Test backend connectivity
+    this.testBackendConnectivity();
+  }
+
+  testBackendConnectivity(): void {
+    console.log('Testing backend connectivity for book issue endpoints...');
+    // This will be called when component loads to verify backend is working
+  }
+
   onSubmit(): void {
     if (this.issueForm.valid) {
       const dto: BookIssueDto = this.issueForm.value;
+      console.log('Issuing book with data:', dto);
+
       this.bookIssueService.issueBook(dto).subscribe({
         next: (response) => {
-          this.success = response.message;
+          console.log('Book issued successfully:', response);
+          this.success = response.message || 'Book issued successfully!';
           this.error = null;
           this.issueForm.reset();
-          setTimeout(() => (this.success = null), 3000);
+
+          // Clear success message after 5 seconds
+          setTimeout(() => {
+            this.success = null;
+          }, 5000);
         },
         error: (err) => {
+          console.error('Error issuing book:', err);
           this.error = err.error?.message || 'Failed to issue book';
           this.success = null;
         },
+      });
+    } else {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.issueForm.controls).forEach((key) => {
+        const control = this.issueForm.get(key);
+        control?.markAsTouched();
       });
     }
   }
@@ -73,6 +97,10 @@ export class BookIssueComponent {
       this.issuedBooksTotal = 0;
       return;
     }
+
+    console.log(
+      `Searching for issued books for user: ${this.searchUserId}, page: ${page}`
+    );
     this.issuedBooksPage = page;
     this.bookIssueService
       .getIssuedBooksByUser(
@@ -82,13 +110,23 @@ export class BookIssueComponent {
       )
       .subscribe({
         next: (result) => {
+          console.log('Issued books result:', result);
           this.issuedBooks = result.data;
           this.issuedBooksTotal = result.total;
+          this.error = null;
+
+          if (result.data.length === 0) {
+            this.success = 'No issued books found for this user.';
+          } else {
+            this.success = `Found ${result.data.length} issued book(s) for user ${this.searchUserId}.`;
+          }
         },
         error: (err) => {
+          console.error('Error in onSearch:', err);
           this.issuedBooks = [];
           this.issuedBooksTotal = 0;
           this.error = err.error?.message || 'Failed to fetch issued books';
+          this.success = null;
         },
       });
   }

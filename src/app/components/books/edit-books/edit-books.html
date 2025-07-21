@@ -1,59 +1,76 @@
 <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="text-center">Edit Book</h3>
-          </div>
-          <div class="card-body">
-            <div *ngIf="loading" class="alert alert-info">Loading...</div>
-            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-            <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
-              <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="title"
-                  formControlName="title"
-                  [class.is-invalid]="bookForm.get('title')?.invalid && bookForm.get('title')?.touched"
-                >
-                <div *ngIf="bookForm.get('title')?.hasError('required')" class="invalid-feedback">
-                  Title is required
-                </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Edit Book</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="alert alert-info">Loading...</div>
+          <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+          <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="title"
+                formControlName="title"
+                [class.is-invalid]="bookForm.get('title')?.invalid && bookForm.get('title')?.touched"
+              />
+              <div
+                *ngIf="bookForm.get('title')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Title is required
               </div>
-              <div class="mb-3">
-                <label for="author" class="form-label">Author</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="author"
-                  formControlName="author"
-                  [class.is-invalid]="bookForm.get('author')?.invalid && bookForm.get('author')?.touched"
-                >
-                <div *ngIf="bookForm.get('author')?.hasError('required')" class="invalid-feedback">
-                  Author is required
-                </div>
+            </div>
+            <div class="mb-3">
+              <label for="author" class="form-label">Author</label>
+              <input
+                type="text"
+                class="form-control"
+                id="author"
+                formControlName="author"
+                [class.is-invalid]="bookForm.get('author')?.invalid && bookForm.get('author')?.touched"
+              />
+              <div
+                *ngIf="bookForm.get('author')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Author is required
               </div>
-              <div class="mb-3">
-                <label for="topics" class="form-label">Topics</label>
-                <select
-                  multiple
-                  class="form-select"
-                  id="topics"
-                  formControlName="topics"
-                  [class.is-invalid]="bookForm.get('topics')?.invalid && bookForm.get('topics')?.touched"
-                >
-                  <option *ngFor="let topic of topics" [value]="topic.id!">{{ topic.genre }}</option>
-                </select>
-                <div *ngIf="bookForm.get('topics')?.hasError('required')" class="invalid-feedback">
-                  At least one topic is required
-                </div>
+            </div>
+            <div class="mb-3">
+              <label for="topics" class="form-label">Topics</label>
+              <select
+                multiple
+                class="form-select"
+                id="topics"
+                formControlName="topics"
+                [class.is-invalid]="bookForm.get('topics')?.invalid && bookForm.get('topics')?.touched"
+              >
+                <option *ngFor="let topic of topics" [value]="topic.id!">
+                  {{ topic.genre }}
+                </option>
+              </select>
+              <div
+                *ngIf="bookForm.get('topics')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                At least one topic is required
               </div>
-              <button type="submit" class="btn btn-primary w-100" [disabled]="bookForm.invalid">Update</button>
-            </form>
-          </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary w-100"
+              [disabled]="bookForm.invalid"
+            >
+              Update
+            </button>
+          </form>
         </div>
       </div>
     </div>
   </div>
+</div>

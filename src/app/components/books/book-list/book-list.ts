@@ -57,6 +57,7 @@ export class BooksListComponent implements OnInit {
 
   loadBooks(): void {
     this.loading = true;
+    this.error = null; // Clear previous errors
     const offset = this.currentPage;
     const query: PaginationQuery = {
       offset: offset,
@@ -65,18 +66,71 @@ export class BooksListComponent implements OnInit {
       search: this.searchQuery || undefined,
     };
 
+    console.log('Loading books with query:', query); // Debug log
+
     this.booksService.getBooks(query).subscribe({
       next: (response) => {
-        this.books = response.data;
+        let filteredBooks = response.data;
+
+        // Debug: Log the first book to see its structure
+        if (filteredBooks.length > 0) {
+          console.log('First book structure:', filteredBooks[0]);
+          console.log('First book topics:', filteredBooks[0].topics);
+        }
+
+        // Client-side search fallback if backend search isn't working
+        if (this.searchQuery && filteredBooks.length === response.data.length) {
+          const searchTerm = this.searchQuery.toLowerCase();
+          filteredBooks = response.data.filter(
+            (book) =>
+              book.title?.toLowerCase().includes(searchTerm) ||
+              book.author?.toLowerCase().includes(searchTerm)
+          );
+          console.log(
+            'Applied client-side search filter:',
+            filteredBooks.length,
+            'results'
+          );
+        }
+
+        this.books = filteredBooks;
         this.currentPage = response.number;
         this.totalPages = response.totalPages;
+
+        // Client-side case-insensitive sorting fallback
+        if (this.sort && !this.sort.includes('createdAt')) {
+          this.books.sort((a, b) => {
+            const field = this.sort.split(':')[0];
+            const direction = this.sort.split(':')[1];
+
+            let aValue = '';
+            let bValue = '';
+
+            if (field === 'title') {
+              aValue = a.title?.toLowerCase() || '';
+              bValue = b.title?.toLowerCase() || '';
+            } else if (field === 'author') {
+              aValue = a.author?.toLowerCase() || '';
+              bValue = b.author?.toLowerCase() || '';
+            }
+
+            if (direction === 'desc') {
+              return bValue.localeCompare(aValue);
+            } else {
+              return aValue.localeCompare(bValue);
+            }
+          });
+        }
+
         this.loading = false;
       },
       error: (err) => {
+        console.error('Error loading books:', err); // Debug log
         this.error =
           err.error?.message ||
           `Failed to load books. Ensure backend is running on http://localhost:3000 and proxy is configured.`;
         this.loading = false;
+        this.books = []; // Clear books on error
       },
     });
   }
@@ -84,7 +138,14 @@ export class BooksListComponent implements OnInit {
   loadTopics(): void {
     this.booksService.getTopics().subscribe({
       next: (response) => {
+        console.log('Topics response:', response); // Debug log
         this.topics = Array.isArray(response) ? response : response.data || [];
+        console.log('Loaded topics:', this.topics); // Debug log
+
+        // Log first topic structure if available
+        if (this.topics.length > 0) {
+          console.log('First topic structure:', this.topics[0]);
+        }
       },
       error: (err) => {
         console.error('Failed to load topics:', err);
@@ -93,6 +154,14 @@ export class BooksListComponent implements OnInit {
   }
 
   onSearch(): void {
+    console.log('Search triggered with query:', this.searchQuery);
+    this.currentPage = 1;
+    this.loadBooks();
+  }
+
+  clearSearch(): void {
+    console.log('Clearing search');
+    this.searchQuery = '';
     this.currentPage = 1;
     this.loadBooks();
   }
@@ -174,10 +243,34 @@ export class BooksListComponent implements OnInit {
   }
 
   getTopicNames(topics: any[]): string {
-    if (!topics || topics.length === 0) return 'No topics';
-    return topics
-      .map((topic) => topic.genre  || 'Unknown')
-      .join(', ');
+    console.log('getTopicNames called with:', topics); // Debug log
+
+    if (!topics || topics.length === 0) {
+      console.log('No topics found');
+      return 'No topics';
+    }
+
+    // Check if topics are objects with genre property
+    if (topics[0] && typeof topics[0] === 'object' && topics[0].genre) {
+      console.log('Topics are objects with genre');
+      return topics.map((topic) => topic.genre || 'Unknown').join(', ');
+    }
+
+    // Topics are likely IDs, need to look them up in the topics array
+    if (topics[0] && typeof topics[0] === 'string') {
+      console.log('Topics are IDs, looking up in topics array');
+      const topicNames = topics.map((topicId) => {
+        const topic = this.topics.find(
+          (t) => t.id === topicId || t._id === topicId
+        );
+        console.log(`Looking for topic ID ${topicId}, found:`, topic);
+        return topic ? topic.genre : 'Unknown Topic';
+      });
+      return topicNames.join(', ');
+    }
+
+    console.log('Unknown topic format:', topics);
+    return 'Unknown format';
   }
 
   getSelectedTopicNames(): string {

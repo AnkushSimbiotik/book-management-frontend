@@ -12,11 +12,18 @@ import {
   FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { PaginatedTopics } from '../../../interface/topics.interface';
 
 @Component({
   selector: 'app-topics-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PaginationComponent, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    PaginationComponent,
+    ReactiveFormsModule,
+  ],
   providers: [TopicsService],
   templateUrl: './topic-list.html',
   styleUrls: ['./topic-list.scss'],
@@ -46,38 +53,101 @@ export class TopicsListComponent implements OnInit {
 
   loadTopics(): void {
     this.loading = true;
+    this.error = null; // Clear previous errors
     const query: PaginationQuery = {
       offset: this.currentPage, // 1-based offset (e.g., 1 for first page)
       limit: this.pageSize,
       sort: this.sort || undefined,
       search: this.searchQuery || undefined,
     };
-    console.log('Query:', query); // Debug log
+    console.log('Loading topics with query:', query); // Debug log
     this.topicsService.getTopics(query).subscribe({
-      next: (response) => {
-        if (response && 'data' in response && Array.isArray(response.data)) {
-          this.topics = [...response.data];
-          this.totalPages = Math.ceil((response.length || 0) / this.pageSize);
-        } else if (Array.isArray(response)) {
-          this.topics = [...response];
-          this.totalPages = Math.ceil(100 / this.pageSize); // Replace 100 with actual total
-        } else {
-          this.topics = [];
-          this.totalPages = 1;
-          this.error = 'Unexpected response format';
+      next: (response: PaginatedTopics) => {
+        let filteredTopics = response.data || [];
+
+        // Debug: Log the first topic to see its structure
+        if (filteredTopics.length > 0) {
+          console.log('First topic structure:', filteredTopics[0]);
+          console.log('First topic id:', filteredTopics[0].id);
+          console.log('First topic _id:', (filteredTopics[0] as any)._id);
         }
+
+        // Client-side search fallback if backend search isn't working
+        if (
+          this.searchQuery &&
+          filteredTopics.length === (response.data || []).length
+        ) {
+          const searchTerm = this.searchQuery.toLowerCase();
+          filteredTopics = (response.data || []).filter(
+            (topic) =>
+              topic.genre?.toLowerCase().includes(searchTerm) ||
+              topic.description?.toLowerCase().includes(searchTerm)
+          );
+          console.log(
+            'Applied client-side search filter:',
+            filteredTopics.length,
+            'results'
+          );
+        }
+
+        // Backend always returns paginated response
+        this.topics = filteredTopics;
+        this.totalPages = response.totalPages || 1;
+
+        // Debug: Log all topics to see their structure
+        console.log('All loaded topics:');
+        this.topics.forEach((topic, index) => {
+          console.log(`Topic ${index + 1}:`, {
+            topic: topic,
+            id: topic.id,
+            _id: (topic as any)._id,
+            genre: topic.genre,
+            description: topic.description,
+          });
+        });
+
+        // Client-side case-insensitive sorting fallback
+        if (this.sort && !this.sort.includes('createdAt')) {
+          this.topics.sort((a, b) => {
+            const field = this.sort.split(':')[0];
+            const direction = this.sort.split(':')[1];
+
+            let aValue = '';
+            let bValue = '';
+
+            if (field === 'genre') {
+              aValue = a.genre?.toLowerCase() || '';
+              bValue = b.genre?.toLowerCase() || '';
+            }
+
+            if (direction === 'desc') {
+              return bValue.localeCompare(aValue);
+            } else {
+              return aValue.localeCompare(bValue);
+            }
+          });
+        }
+
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error Response:', err); // Log full error
+        console.error('Error loading topics:', err); // Debug log
         this.error = err.error?.message || 'Failed to load topics';
-        this.topics = [];
+        this.topics = []; // Clear topics on error
         this.loading = false;
       },
     });
   }
 
   onSearch(): void {
+    console.log('Search triggered with query:', this.searchQuery);
+    this.currentPage = 1;
+    this.loadTopics();
+  }
+
+  clearSearch(): void {
+    console.log('Clearing search');
+    this.searchQuery = '';
     this.currentPage = 1;
     this.loadTopics();
   }
@@ -93,10 +163,13 @@ export class TopicsListComponent implements OnInit {
   }
 
   deleteTopic(id: string): void {
+    console.log('deleteTopic called with ID:', id);
     if (confirm('Are you sure you want to delete this topic?')) {
       this.topicsService.deleteTopic(id).subscribe({
         next: () => {
-          this.topics = this.topics.filter((topic) => topic.id !== id);
+          this.topics = this.topics.filter(
+            (topic) => this.getTopicId(topic) !== id
+          );
         },
         error: (err) => {
           this.error = err.error?.message || 'Failed to delete topic';
@@ -106,7 +179,9 @@ export class TopicsListComponent implements OnInit {
   }
 
   startEdit(topic: Topic): void {
-    this.editingTopicId = topic.id;
+    console.log('startEdit called with topic:', topic);
+    console.log('Topic ID for editing:', this.getTopicId(topic));
+    this.editingTopicId = this.getTopicId(topic);
     this.editForm.patchValue({
       genre: topic.genre,
       description: topic.description,
@@ -145,5 +220,13 @@ export class TopicsListComponent implements OnInit {
   }
   get descriptionControl(): FormControl {
     return this.editForm.get('description') as FormControl;
+  }
+
+  // Helper method to get topic ID consistently
+  getTopicId(topic: Topic): string {
+    const topicId = topic.id || (topic as any)._id || '';
+    console.log('getTopicId called for topic:', topic);
+    console.log('Returning topic ID:', topicId);
+    return topicId;
   }
 }

@@ -20,24 +20,37 @@ export class BooksService {
 
   private headers = new HttpHeaders({ 'ngrok-skip-browser-warning': 'true' });
 
-  createBook(bookData: { title: string; author: string; topics: string[] }): Observable<Book> {
-    return this.http.post<Book>(API_CONSTANTS.BOOKS.BASE, bookData, { headers: this.headers }).pipe(
-      catchError((error) => {
-        console.error('Create Book Error:', error);
-        return throwError(() => new Error(error.error?.message || 'Unable to create book'));
-      })
-    );
+  createBook(bookData: {
+    title: string;
+    author: string;
+    topics: string[];
+  }): Observable<Book> {
+    return this.http
+      .post<Book>(API_CONSTANTS.BOOKS.BASE, bookData, { headers: this.headers })
+      .pipe(
+        catchError((error) => {
+          console.error('Create Book Error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Unable to create book')
+          );
+        })
+      );
   }
 
-  getBooks(query: PaginationQuery): Observable<PaginatedBooks> {
+  getBooks(
+    query: PaginationQuery,
+    includeDeleted: boolean = false
+  ): Observable<PaginatedBooks> {
     const params: { [key: string]: string } = {
       offset: query.offset?.toString() || '1',
       limit: query.limit?.toString() || '10',
     };
     if (query.sort) params['sort'] = query.sort;
     if (query.search) params['search'] = query.search;
+    if (includeDeleted) params['includeDeleted'] = 'true';
+
     return this.http
-      .get<PaginatedBooks>(`/${API_CONSTANTS.BOOKS.BASE}`, {
+      .get<PaginatedBooks>(API_CONSTANTS.BOOKS.BASE, {
         headers: this.headers,
         params,
       })
@@ -48,32 +61,44 @@ export class BooksService {
       );
   }
 
+  getAllBooks(query: PaginationQuery): Observable<PaginatedBooks> {
+    return this.getBooks(query, true);
+  }
+
   getBook(id: string): Observable<Book> {
-    return this.http.get<Book>(`${API_CONSTANTS.BOOKS.BASE}/${id}`, { headers: this.headers }).pipe(
-      catchError((error) => {
-        console.error('Get Book Error:', error);
-        return throwError(() => new Error(error.error?.message || 'Unable to load book'));
-      })
-    );
-  }
-
-  updateBook(id: string, bookData: Partial<Book>): Observable<Book> {
-    console.log('Updating book with ID:', id, 'Data:', bookData); // Debug the update
-    return this.http.patch<Book>(`${API_CONSTANTS.BOOKS.BASE}/${id}`, bookData, { headers: this.headers }).pipe(
-      catchError((error) => {
-        console.error('Update Book Error:', error);
-        return throwError(() => new Error(error.error?.message || 'Unable to update book'));
-      })
-    );
-  }
-
-  deleteBook(id: string): Observable<Book> {
     return this.http
-      .put<Book>(
-        `/${API_CONSTANTS.BOOKS.BY_ID(id)}`,
-        {},
-        { headers: this.headers }
-      )
+      .get<Book>(`${API_CONSTANTS.BOOKS.BY_ID(id)}`, { headers: this.headers })
+      .pipe(
+        catchError((error) => {
+          console.error('Get Book Error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Unable to load book')
+          );
+        })
+      );
+  }
+
+  updateBook(id: string, dto: UpdateBookDto): Observable<Book> {
+    console.log('Updating book with ID:', id, 'Data:', dto); // Debug the update
+    return this.http
+      .patch<Book>(`${API_CONSTANTS.BOOKS.BY_ID(id)}`, dto, {
+        headers: this.headers,
+      })
+      .pipe(
+        catchError((error) => {
+          console.error('Update Book Error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Unable to update book')
+          );
+        })
+      );
+  }
+
+  deleteBook(id: string): Observable<void> {
+    return this.http
+      .delete<void>(`${API_CONSTANTS.BOOKS.BY_ID(id)}`, {
+        headers: this.headers,
+      })
       .pipe(
         catchError((error) => {
           throw error;
@@ -82,17 +107,24 @@ export class BooksService {
   }
 
   getTopics(): Observable<Topic[] | { data: Topic[]; total: number }> {
-    return this.http.get<Topic[] | { data: Topic[]; total: number }>(API_CONSTANTS.TOPICS.BASE, { headers: this.headers }).pipe(
-      catchError((error) => {
-        console.error('Get Topics Error:', error);
-        return throwError(() => new Error(error.error?.message || 'Unable to load topics'));
-      })
-    );
+    return this.http
+      .get<Topic[] | { data: Topic[]; total: number }>(
+        API_CONSTANTS.TOPICS.BASE,
+        { headers: this.headers }
+      )
+      .pipe(
+        catchError((error) => {
+          console.error('Get Topics Error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Unable to load topics')
+          );
+        })
+      );
   }
 
-  getTotalBooks(): Observable<number> {
+  getTotalBooks(): Observable<{ total: number }> {
     return this.http
-      .get<number>(`/${API_CONSTANTS.DASHBOARD.STATS_BOOK}`, {
+      .get<{ total: number }>(API_CONSTANTS.DASHBOARD.STATS_BOOK, {
         headers: this.headers,
       })
       .pipe(
