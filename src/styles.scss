@@ -73,3 +73,10 @@ body {
 .form-select[multiple] {
   height: 150px;
 }
+
+
+.invalid-feedback {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 4px;
+}

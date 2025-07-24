@@ -40,4 +40,6 @@ export interface PaginationQuery {
   limit?: number;
   sort?: string;
   search?: string;
-}
+  userId?: string;
+  bookId?: string;
+  }

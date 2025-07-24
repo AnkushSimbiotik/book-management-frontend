@@ -14,6 +14,8 @@ import {
   BookIssue,
 } from '../../../interface/book-issue-return.interface';
 import { PaginationComponent } from '../../../common/pagination/pagination';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
 
 @Component({
   selector: 'app-book-issue',
@@ -22,7 +24,7 @@ import { PaginationComponent } from '../../../common/pagination/pagination';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    PaginationComponent,
+    NoLeadingSpaceDirective
   ],
   providers: [BookIssueService],
   templateUrl: './book-issue.html',
@@ -44,8 +46,8 @@ export class BookIssueComponent implements OnInit {
     private router: Router
   ) {
     this.issueForm = this.fb.group({
-      userId: ['', Validators.required],
-      bookId: ['', Validators.required],
+      userId: ['', Validators.required , noLeadingSpaceValidator()],
+      bookId: ['', Validators.required , noLeadingSpaceValidator()],
     });
   }
 

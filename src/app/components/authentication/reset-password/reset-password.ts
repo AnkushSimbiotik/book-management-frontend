@@ -7,14 +7,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth.service';
 import { ResetPasswordDto } from '../../../interface/authenticationInterface/auth.interface';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink , NoLeadingSpaceDirective],
   providers: [AuthService],
   templateUrl: './reset-password.html',
 })

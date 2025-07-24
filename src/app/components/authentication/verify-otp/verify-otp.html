@@ -14,6 +14,7 @@
                 type="email"
                 id="email"
                 class="form-control"
+                 appNoLeadingSpace
                 formControlName="email"
                 [class.is-invalid]="verifyOtpForm.get('email')?.invalid && verifyOtpForm.get('email')?.touched"
               />
@@ -27,6 +28,7 @@
                 type="text"
                 id="otp"
                 class="form-control"
+                 appNoLeadingSpace
                 formControlName="otp"
                 [class.is-invalid]="verifyOtpForm.get('otp')?.invalid && verifyOtpForm.get('otp')?.touched"
               />

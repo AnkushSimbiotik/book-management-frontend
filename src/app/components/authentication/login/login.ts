@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth.service';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.html',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, NoLeadingSpaceDirective],
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -20,9 +22,18 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      email: ['', [Validators.required, Validators.email, noLeadingSpaceValidator()]],
+      password: ['', [Validators.required, Validators.minLength(8), noLeadingSpaceValidator()]],
     });
+  }
+
+  // CHANGE: Added getters for form controls
+  get emailControl(): FormControl {
+    return this.loginForm.get('email') as FormControl;
+  }
+
+  get passwordControl(): FormControl {
+    return this.loginForm.get('password') as FormControl;
   }
 
   onSubmit(event: SubmitEvent): void {

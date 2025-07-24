@@ -1,96 +1,80 @@
 <div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="text-center">Create Book</h3>
-        </div>
-        <div class="card-body">
-          <form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
-            <div class="mb-3">
-              <label for="title" class="form-label">Title</label>
-              <input
-                type="text"
-                class="form-control"
-                id="title"
-                formControlName="title"
-                [class.is-invalid]="bookForm.get('title')?.invalid && bookForm.get('title')?.touched"
-              />
-              <div
-                *ngIf="bookForm.get('title')?.hasError('required')"
-                class="invalid-feedback"
-              >
-                Title is required
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="author" class="form-label">Author</label>
-              <input
-                type="text"
-                class="form-control"
-                id="author"
-                formControlName="author"
-                [class.is-invalid]="bookForm.get('author')?.invalid && bookForm.get('author')?.touched"
-              />
-              <div
-                *ngIf="bookForm.get('author')?.hasError('required')"
-                class="invalid-feedback"
-              >
-                Author is required
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="topics" class="form-label">Topics</label>
-              <div *ngIf="loading" class="alert alert-info mt-2">
-                Loading topics...
-              </div>
-              <div *ngIf="error" class="alert alert-danger mt-2">
-                {{ error }}
-              </div>
-              <select
-                class="form-select"
-                id="topics"
-                formControlName="topics"
-                multiple
-                [class.is-invalid]="bookForm.get('topics')?.invalid && bookForm.get('topics')?.touched"
-                *ngIf="topics.length > 0"
-              >
-                <option
-                  *ngFor="let topic of topics"
-                  [value]="getTopicId(topic)"
-                  [disabled]="!getTopicId(topic)"
-                >
-                  {{ topic.genre || 'Unnamed Topic' }}
-                </option>
-              </select>
-              <div
-                *ngIf="bookForm.get('topics')?.hasError('required') && bookForm.get('topics')?.touched"
-                class="invalid-feedback"
-              >
-                At least one topic is required
-              </div>
-              <small class="form-text text-muted"
-                >Hold Ctrl (Cmd on Mac) to select multiple topics</small
-              >
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary w-100"
-              [disabled]="bookForm.invalid || loading || topics.length === 0"
-            >
-              <span
-                *ngIf="loading"
-                class="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              {{ loading ? 'Creating...' : (topics.length === 0 ? 'Loading
-              Topics...' : 'Create Book') }}
-            </button>
-            <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
-          </form>
-        </div>
+  <h2>Create Book</h2>
+
+  <!-- Loading or Error State -->
+  <div *ngIf="loading" class="alert alert-info">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Book Form -->
+  <form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input
+        type="text"
+        id="title"
+        class="form-control"
+        formControlName="title"
+        appNoLeadingSpace
+        placeholder="Enter book title"
+        [class.is-invalid]="titleControl.invalid && titleControl.touched"
+      />
+      <div *ngIf="titleControl.hasError('required')" class="invalid-feedback">
+        Title is required
+      </div>
+      <div *ngIf="titleControl.hasError('leadingSpace')" class="invalid-feedback">
+        {{ titleControl.errors!['leadingSpace'] }}
       </div>
     </div>
-  </div>
+
+    <div class="mb-3">
+      <label for="author" class="form-label">Author</label>
+      <input
+        type="text"
+        id="author"
+        class="form-control"
+        formControlName="author"
+        appNoLeadingSpace
+        placeholder="Enter author name"
+        [class.is-invalid]="authorControl.invalid && authorControl.touched"
+      />
+      <div *ngIf="authorControl.hasError('required')" class="invalid-feedback">
+        Author is required
+      </div>
+      <div *ngIf="authorControl.hasError('leadingSpace')" class="invalid-feedback">
+        {{ titleControl.errors!['leadingSpace'] }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Topics</label>
+      <div class="form-check" *ngFor="let topic of topics">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          [id]="'topic-' + getTopicId(topic)"
+          [value]="getTopicId(topic)"
+          [checked]="topicsControl.value?.includes(getTopicId(topic))"
+          (change)="onTopicChange(getTopicId(topic), $event)"
+        />
+        <label class="form-check-label" [for]="'topic-' + getTopicId(topic)">
+          {{ topic.genre || 'Unknown Topic' }}
+        </label>
+      </div>
+      <div *ngIf="topicsControl.hasError('required') && topicsControl.touched" class="invalid-feedback d-block">
+        At least one topic is required
+      </div>
+    </div>
+
+<div class="mb-3 d-flex">
+  <button
+    type="submit"
+    class="btn btn-primary me-1"
+    style="width: 50%;"
+    [disabled]="bookForm.invalid || loading"
+  >
+    Create Book
+  </button>
+  <a class="btn btn-secondary ms-1" style="width: 50%;" routerLink="/books">Cancel</a>
+</div>
+  </form>
 </div>

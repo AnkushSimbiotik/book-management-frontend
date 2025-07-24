@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { RequestPasswordResetDto } from '../../../interface/authenticationInterface/auth.interface';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-forget-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule , RouterLink],
+  imports: [CommonModule, ReactiveFormsModule , RouterLink , NoLeadingSpaceDirective],
   providers: [AuthService],
   templateUrl: './forgetPassword.html',
 })
@@ -23,8 +25,11 @@ export class ForgetPasswordComponent {
     private router: Router
   ) {
     this.forgetForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.email , noLeadingSpaceValidator]]
     });
+  }
+  get emailControl(): FormControl {
+    return this.forgetForm.get('email') as FormControl;
   }
 
   onSubmit(): void {

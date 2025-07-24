@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { API_CONSTANTS } from '../../core/constants/api.constants';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AuthResponse, RequestPasswordResetDto, ResetPasswordDto, SignInDto, SignUpDto, UpdatePasswordDto, VerifyResetOtpDto } from '../../interface/authenticationInterface/auth.interface';
+import { AuthResponse, RequestPasswordResetDto, ResetPasswordDto, SignInDto, SignUpInterface, UpdatePasswordDto, VerifyResetOtpDto } from '../../interface/authenticationInterface/auth.interface';
 
 
 @Injectable({ providedIn: 'root' }) 
@@ -17,7 +17,7 @@ export class AuthService {
     this.isAuthenticatedSubject.next(value);
   }
 
-  signUp(dto: SignUpDto): Observable<any> {
+  signUp(dto: SignUpInterface): Observable<any> {
     return this.http.post<any>(API_CONSTANTS.AUTH.SIGN_UP, dto, { headers: this.headers });
   }
 
@@ -33,10 +33,11 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
       })
     );
+    
   }
 
   forgetPassword(dto: RequestPasswordResetDto): Observable<any> {
-    return this.http.post<any>(API_CONSTANTS.AUTH.FORGET_PASSWORD, dto, { headers: this.headers });
+    return this.http.post<any>(API_CONSTANTS.AUTH.FORGET_PASSWORD, dto, { headers: this.headers }, );
   }
 
   verifyOtp(dto: VerifyResetOtpDto): Observable<any> {

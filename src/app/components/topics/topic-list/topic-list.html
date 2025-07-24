@@ -13,26 +13,24 @@
         <input
           type="text"
           class="form-control"
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="onSearch()"
-          placeholder="Search topics by genre..."
+          [formControl]="searchControl"
+          placeholder="Search topics by genre, description, or ID..."
+          appNoLeadingSpace
         />
         <button
           class="btn btn-outline-secondary"
           type="button"
-          (click)="onSearch()"
-          [disabled]="loading"
-        >
-          <i class="bi bi-search"></i> Search
-        </button>
-        <button
-          class="btn btn-outline-secondary"
-          type="button"
           (click)="clearSearch()"
-          [disabled]="!searchQuery"
+          [disabled]="!searchControl.value"
         >
           Clear
         </button>
+      </div>
+      <div
+        *ngIf="searchControl.touched && searchControl.errors?.['leadingSpace']"
+        class="invalid-feedback d-block"
+      >
+        {{ searchControl.errors!['leadingSpace'] }}
       </div>
     </div>
     <div class="col-md-6">
@@ -47,17 +45,19 @@
   </div>
 
   <!-- Loading or Error State -->
-  <div *ngIf="loading" class="alert alert-info">Loading topics...</div>
+  <div *ngIf="loading" class="alert alert-info d-flex align-items-center">
+    <div class="spinner-border spinner-border-sm me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    Searching topics...
+  </div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
   <!-- Search Results Feedback -->
   <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
     <i class="bi bi-search"></i>
     Search results for "{{ searchQuery }}": {{ topics.length }} topic(s) found
-    <button
-      class="btn btn-sm btn-outline-secondary ms-2"
-      (click)="clearSearch()"
-    >
+    <button class="btn btn-sm btn-outline-secondary ms-2" (click)="clearSearch()">
       Clear Search
     </button>
   </div>
@@ -67,7 +67,8 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Title</th>
+          <th>Id</th>
+          <th>Genre</th>
           <th>Created At</th>
           <th>Actions</th>
         </tr>
@@ -75,8 +76,9 @@
       <tbody>
         <tr *ngFor="let topic of topics">
           <ng-container *ngIf="!isEditing(topic); else editRow">
+            <td>{{ topic._id }}</td>
             <td>{{ topic.genre }}</td>
-            <td>{{ topic.createdAt | date }}</td>
+            <td>{{ topic.createdAt | date:'dd/MM/yyyy' }}</td>
             <td>
               <a
                 *ngIf="getTopicId(topic)"
@@ -104,17 +106,26 @@
             </td>
           </ng-container>
           <ng-template #editRow>
+            <td>{{ topic._id }}</td>
             <td>
               <input
                 class="form-control form-control-sm"
                 [formControl]="genreControl"
+                [class.is-invalid]="genreControl.invalid && genreControl.touched"
               />
+              <div *ngIf="genreControl.hasError('required')" class="invalid-feedback">
+                Genre is required
+              </div>
             </td>
             <td>
               <input
                 class="form-control form-control-sm"
                 [formControl]="descriptionControl"
+                [class.is-invalid]="descriptionControl.invalid && descriptionControl.touched"
               />
+              <div *ngIf="descriptionControl.hasError('required')" class="invalid-feedback">
+                Description is required
+              </div>
             </td>
             <td>
               <button
@@ -133,7 +144,10 @@
       </tbody>
     </table>
   </div>
-  <div *ngIf="topics?.length === 0" class="alert alert-warning">
+  <div *ngIf="topics.length === 0 && !loading && searchQuery" class="alert alert-warning">
+    No topics found for "{{ searchQuery }}". Try a different search term.
+  </div>
+  <div *ngIf="topics.length === 0 && !loading && !searchQuery" class="alert alert-warning">
     No topics found.
   </div>
 

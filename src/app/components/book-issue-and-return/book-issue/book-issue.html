@@ -13,6 +13,7 @@
                 type="text"
                 class="form-control"
                 id="userId"
+                appNoLeadingSpace
                 formControlName="userId"
                 [class.is-invalid]="issueForm.get('userId')?.invalid && issueForm.get('userId')?.touched"
               />
@@ -29,6 +30,7 @@
                 type="text"
                 class="form-control"
                 id="bookId"
+                appNoLeadingSpace
                 formControlName="bookId"
                 [class.is-invalid]="issueForm.get('bookId')?.invalid && issueForm.get('bookId')?.touched"
               />
@@ -51,59 +53,7 @@
               {{ success }}
             </div>
           </form>
-          <div class="mt-4">
-            <h5>Search Issued Books by User ID</h5>
-            <div class="input-group mb-2">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Enter User ID"
-                [(ngModel)]="searchUserId"
-              />
-              <button
-                class="btn btn-secondary"
-                (click)="onSearch()"
-                [disabled]="!searchUserId"
-              >
-                Search
-              </button>
-            </div>
-            <div *ngIf="issuedBooks && issuedBooks.length > 0">
-              <div class="alert alert-info">
-                <i class="bi bi-search"></i>
-                Showing {{ issuedBooks.length }} of {{ issuedBooksTotal }} issued book(s) for user {{ searchUserId }}
-              </div>
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Book ID</th>
-                    <th>Issue Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let book of issuedBooks">
-                    <td>{{ book.bookId }}</td>
-                    <td>{{ book.issueDate | date:'short' }}</td>
-                    <td>{{ book.status }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <app-pagination
-                [currentPage]="issuedBooksPage"
-                [totalPages]="issuedBooksTotalPages"
-                (pageChange)="onIssuedBooksPageChange($event)"
-              >
-              </app-pagination>
-            </div>
-            <div
-              *ngIf="issuedBooks && issuedBooks.length === 0 && searchUserId"
-            >
-              <div class="alert alert-warning">
-                No issued books found for this user.
-              </div>
-            </div>
-          </div>
+        
         </div>
       </div>
     </div>

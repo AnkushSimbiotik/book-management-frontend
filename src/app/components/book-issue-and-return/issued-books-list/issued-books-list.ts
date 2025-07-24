@@ -7,11 +7,12 @@ import {
   BookIssue,
   PaginationQuery,
 } from '../../../interface/book-issue-return.interface';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-issued-books-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent , NoLeadingSpaceDirective],
   providers: [BookIssueService],
   templateUrl: './issued-books-list.html',
   styleUrls: ['./issued-books-list.scss'],
@@ -25,6 +26,9 @@ export class IssuedBooksListComponent implements OnInit {
   sort: string = '';
   loading: boolean = false;
   error: string | null = null;
+  searchUserId: string = '';
+  searchBookId: string = '';
+  statusFilter: string = 'Issued'; 
 
   constructor(private bookIssueService: BookIssueService) {}
 
@@ -41,16 +45,30 @@ export class IssuedBooksListComponent implements OnInit {
       limit: this.pageSize,
       sort: this.sort || undefined,
       search: this.searchQuery || undefined,
+      userId: this.searchUserId || undefined,
+      bookId: this.searchBookId || undefined,
     };
 
     console.log('Loading issued books with query:', query);
 
-    // For now, we'll need to implement a new endpoint for getting all issued books
-    // This is a placeholder - you'll need to add this to your backend
     this.bookIssueService.getAllIssuedBooks(query).subscribe({
       next: (response) => {
         console.log('Issued books loaded:', response);
-        this.issuedBooks = response.data || [];
+        let data = response.data || [];
+        if (this.searchUserId) {
+          data = data.filter((b) =>
+            b.userId?.toLowerCase().includes(this.searchUserId.toLowerCase())
+          );
+        }
+        if (this.searchBookId) {
+          data = data.filter((b) =>
+            b.bookId?.toLowerCase().includes(this.searchBookId.toLowerCase())
+          );
+        }
+        if (this.statusFilter) {
+          data = data.filter((b) => b.status === this.statusFilter);
+        }
+        this.issuedBooks = data;
         this.currentPage = response.page || 1;
         this.totalPages = response.totalPages || 1;
         this.loading = false;
@@ -70,7 +88,10 @@ export class IssuedBooksListComponent implements OnInit {
   }
 
   clearSearch(): void {
+    this.searchUserId = '';
+    this.searchBookId = '';
     this.searchQuery = '';
+    this.statusFilter = 'Issued';
     this.currentPage = 1;
     this.loadIssuedBooks();
   }

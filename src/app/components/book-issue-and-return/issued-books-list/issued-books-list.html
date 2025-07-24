@@ -3,46 +3,38 @@
 
   <!-- Search and Sort -->
   <div class="row mb-3">
-    <div class="col-md-6">
-      <div class="input-group">
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="onSearch()"
-          placeholder="Search by user name, book title, or status..."
-        />
-        <button 
-          class="btn btn-outline-secondary" 
-          type="button"
-          (click)="onSearch()"
-          [disabled]="loading"
-        >
-          <i class="bi bi-search"></i> Search
-        </button>
-        <button 
-          class="btn btn-outline-secondary" 
-          type="button"
-          (click)="clearSearch()"
-          [disabled]="!searchQuery"
-        >
-          Clear
-        </button>
-      </div>
+    <div class="col-md-4">
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchUserId"
+        (keyup.enter)="onSearch()"
+        placeholder="Search by User ID"
+        appNoLeadingSpace
+      />
     </div>
-    <div class="col-md-6">
-      <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
-        <option value="">Sort by</option>
-        <option value="issueDate:desc">Issue Date (Newest First)</option>
-        <option value="issueDate:asc">Issue Date (Oldest First)</option>
-        <option value="status:asc">Status (A-Z)</option>
-        <option value="status:desc">Status (Z-A)</option>
-        <option value="estimatedReturnDate:asc">Return Date (Earliest First)</option>
-        <option value="estimatedReturnDate:desc">Return Date (Latest First)</option>
+    <div class="col-md-4">
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="searchBookId"
+        (keyup.enter)="onSearch()"
+        placeholder="Search by Book ID"
+        appNoLeadingSpace
+      />
+    </div>
+    <div class="col-md-4">
+      <select
+        class="form-select"
+        [(ngModel)]="statusFilter"
+        (change)="onSearch()"
+      >
+        <option value="Issued">Issued</option>
+        <option value="Returned">Returned</option>
+        <option value="">All Statuses</option>
       </select>
     </div>
   </div>
-
   <!-- Loading or Error State -->
   <div *ngIf="loading" class="alert alert-info">Loading issued books...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
@@ -50,9 +42,10 @@
   <!-- Search Results Feedback -->
   <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
     <i class="bi bi-search"></i>
-    Search results for "{{ searchQuery }}": {{ issuedBooks.length }} book(s) found
-    <button 
-      class="btn btn-sm btn-outline-secondary ms-2" 
+    Search results for "{{ searchQuery }}": {{ issuedBooks.length }} book(s)
+    found
+    <button
+      class="btn btn-sm btn-outline-secondary ms-2"
       (click)="clearSearch()"
     >
       Clear Search
@@ -81,25 +74,33 @@
           <td>
             <strong>{{ getBookDisplay(issue) }}</strong>
           </td>
-          <td>{{ issue.issueDate | date:'short' }}</td>
-          <td>{{ issue.estimatedReturnDate | date:'short' }}</td>
+          <td>{{ issue.issueDate | date:'dd/MM/yyyy' }}</td>
+          <td>{{ issue.estimatedReturnDate | date:'dd/MM/yyyy' }}</td>
           <td>
             <span [class]="getStatusBadgeClass(issue.status)">
               {{ issue.status }}
             </span>
           </td>
           <td>
-            <span *ngIf="issue.returnDate">{{ issue.returnDate | date:'short' }}</span>
+            <span *ngIf="issue.returnDate"
+              >{{ issue.returnDate | date:'dd/MM/yyyy' }}</span
+            >
             <span *ngIf="!issue.returnDate" class="text-muted">-</span>
           </td>
           <td>
             <span *ngIf="getDaysOverdue(issue) > 0" class="badge bg-danger">
               {{ getDaysOverdue(issue) }} day(s) overdue
             </span>
-            <span *ngIf="getDaysOverdue(issue) === 0 && issue.status === 'Issued'" class="badge bg-success">
+            <span
+              *ngIf="getDaysOverdue(issue) === 0 && issue.status === 'Issued'"
+              class="badge bg-success"
+            >
               On time
             </span>
-            <span *ngIf="issue.status === 'Returned'" class="badge bg-secondary">
+            <span
+              *ngIf="issue.status === 'Returned'"
+              class="badge bg-secondary"
+            >
               Returned
             </span>
           </td>

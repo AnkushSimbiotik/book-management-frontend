@@ -3,9 +3,11 @@
       <div class="col-md-6">
         <div class="card">
           <div class="card-body text-center">
-            <div *ngIf="loading" class="alert alert-info">Verifying...</div>
-            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-            <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+           <div><h3>Token is sent to your registered Email.
+            Verify Email</h3></div>
+            <h3 >If Done, go to login 
+              <button class="btn btn-primary" routerLink="/login">Login</button>
+            </h3>
           </div>
         </div>
       </div>

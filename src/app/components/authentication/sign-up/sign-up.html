@@ -1,48 +1,124 @@
 <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="text-center">Sign Up</h3>
-          </div>
-          <div class="card-body">
-            <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
-              <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" formControlName="username" [class.is-invalid]="signUpForm.get('username')?.invalid && signUpForm.get('username')?.touched">
-                <div *ngIf="signUpForm.get('username')?.hasError('required')" class="invalid-feedback">Username is required</div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Sign Up</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="signUpForm" (ngSubmit)="onSubmit($event)">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                appNoLeadingSpace
+                id="username"
+                formControlName="username"
+                [class.is-invalid]="signUpForm.get('username')?.invalid && signUpForm.get('username')?.touched"
+              />
+              <div
+                *ngIf="signUpForm.get('username')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Username is required
               </div>
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" formControlName="email" [class.is-invalid]="signUpForm.get('email')?.invalid && signUpForm.get('email')?.touched">
-                <div *ngIf="signUpForm.get('email')?.hasError('required')" class="invalid-feedback">Email is required</div>
+              <div
+                *ngIf="signUpForm.get('email')?.hasError('leadingSpace') && signUpForm.get('username')?.touched"
+                class="invalid-feedback"
+              >
+                username cannot start with a space
               </div>
-              <div class="mb-3">
-                <label for="role" class="form-label">Role</label>
-                <select class="form-control" id="role" formControlName="role" [class.is-invalid]="signUpForm.get('role')?.invalid && signUpForm.get('role')?.touched">
-                  <option value="">Select Role</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
-                </select>
-                <div *ngIf="signUpForm.get('role')?.hasError('required')" class="invalid-feedback">Role is required</div>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                appNoLeadingSpace
+                id="email"
+                formControlName="email"
+                [class.is-invalid]="signUpForm.get('email')?.invalid && signUpForm.get('email')?.touched"
+              />
+              <div
+                *ngIf="signUpForm.get('email')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Email is required
               </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" formControlName="password" [class.is-invalid]="signUpForm.get('password')?.invalid && signUpForm.get('password')?.touched">
-                <div *ngIf="signUpForm.get('password')?.hasError('required')" class="invalid-feedback">Password is required</div>
+            </div>
+            <div class="mb-3">
+              <label for="role" class="form-label">Role</label>
+              <select
+                class="form-control"
+                id="role"
+                formControlName="role"
+                [class.is-invalid]="signUpForm.get('role')?.invalid && signUpForm.get('role')?.touched"
+              >
+                <option value="">Select Role</option>
+                <option value="admin">Admin</option>
+                <option value="customer">Customer</option>
+              </select>
+              <div
+                *ngIf="signUpForm.get('role')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Role is required
               </div>
-              <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" [class.is-invalid]="signUpForm.get('confirmPassword')?.invalid && signUpForm.get('confirmPassword')?.touched">
-                <div *ngIf="signUpForm.get('confirmPassword')?.hasError('required')" class="invalid-feedback">Confirm Password is required</div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                appNoLeadingSpace
+                id="password"
+                formControlName="password"
+                [class.is-invalid]="signUpForm.get('password')?.invalid && signUpForm.get('password')?.touched"
+              />
+              <div
+                *ngIf="signUpForm.get('password')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Password is required
               </div>
-              <button type="submit" class="btn btn-primary w-100" [disabled]="signUpForm.invalid">Sign Up</button>
-              <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
-              <div *ngIf="success" class="alert alert-success mt-3">{{ success }}</div>
-            </form>
-            <p class="text-center mt-3">Already have an account? <a routerLink="/login">Login</a></p>
-          </div>
+            </div>
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPassword"
+                appNoLeadingSpace
+                formControlName="confirmPassword"
+                [class.is-invalid]="signUpForm.get('confirmPassword')?.invalid && signUpForm.get('confirmPassword')?.touched"
+              />
+              <div
+                *ngIf="signUpForm.get('confirmPassword')?.hasError('required')"
+                class="invalid-feedback"
+              >
+                Confirm Password is required
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-primary w-100"
+              [disabled]="signUpForm.invalid"
+            >
+              Sign Up
+            </button>
+            <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+            <div *ngIf="success" class="alert alert-success mt-3">
+              {{ success }}
+            </div>
+          </form>
+          <p class="text-center mt-3">
+            Already have an account? <a routerLink="/login">Login</a>
+          </p>
         </div>
       </div>
     </div>
   </div>
+</div>

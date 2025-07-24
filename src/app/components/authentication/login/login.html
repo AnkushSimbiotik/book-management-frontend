@@ -12,22 +12,27 @@
               <input
                 type="email"
                 class="form-control"
+                appNoLeadingSpace
                 id="email"
                 formControlName="email"
                 [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
               >
+               <div *ngIf="loginForm.get('email')?.hasError('leadingSpace') && loginForm.get('email')?.touched" class="invalid-feedback">
+                Email cannot start with a space
+              </div>
               <div *ngIf="loginForm.get('email')?.hasError('required')" class="invalid-feedback">
                 Email is required
               </div>
               <div *ngIf="loginForm.get('email')?.hasError('email')" class="invalid-feedback">
-                Invalid email format
-              </div>
+                Invalid email format 
+              </div>              
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
                 class="form-control"
+                appNoLeadingSpace
                 id="password"
                 formControlName="password"
                 [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
@@ -37,6 +42,10 @@
               </div>
               <div *ngIf="loginForm.get('password')?.hasError('minlength')" class="invalid-feedback">
                 Password must be at least 8 characters
+              </div>
+              <!-- CHANGE: Added leadingSpace error display -->
+              <div *ngIf="loginForm.get('password')?.hasError('leadingSpace') && loginForm.get('password')?.touched" class="invalid-feedback">
+                Password cannot start with a space
               </div>
             </div>
             <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">

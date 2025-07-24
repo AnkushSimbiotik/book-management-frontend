@@ -1,4 +1,3 @@
-// src/app/components/books/book-create/book-create.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -7,15 +6,25 @@ import {
   FormGroup,
   Validators,
   FormsModule,
+  FormControl,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { BooksService } from '../book.service';
 import { Topic } from '../../../interface/topics.interface';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
+
 
 @Component({
   selector: 'app-create-book',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterLink,
+    NoLeadingSpaceDirective,
+  ],
   providers: [BooksService],
   templateUrl: './book-create.html',
   styleUrls: ['./book-create.scss'],
@@ -32,25 +41,22 @@ export class CreateBookComponent implements OnInit {
     private router: Router
   ) {
     this.bookForm = this.fb.group({
-      title: ['', Validators.required],
-      author: ['', Validators.required],
-      topics: [[], [Validators.required, this.validateTopics.bind(this)]], // Added custom validator
+      title: ['', [Validators.required, noLeadingSpaceValidator()]],
+      author: ['', [Validators.required, noLeadingSpaceValidator()]],
+      topics: [[], [Validators.required, this.validateTopics.bind(this)]],
     });
   }
 
-  // Custom validator to ensure topics array doesn't contain null values
   validateTopics(control: any) {
-    if (!control.value || !Array.isArray(control.value)) {
+    if (!control.value || !Array.isArray(control.value) || control.value.length === 0) {
       return { required: true };
     }
-
     const validTopics = control.value.filter(
       (topicId: any) => topicId != null && topicId !== ''
     );
     if (validTopics.length === 0) {
       return { required: true };
     }
-
     return null;
   }
 
@@ -60,6 +66,10 @@ export class CreateBookComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTopics();
+    console.log('Form initialized:', this.bookForm.value);
+    console.log('Title validators:', this.bookForm.get('title')?.validator);
+    console.log('Author validators:', this.bookForm.get('author')?.validator);
+    console.log('Topics validators:', this.bookForm.get('topics')?.validator);
   }
 
   loadTopics(): void {
@@ -67,11 +77,10 @@ export class CreateBookComponent implements OnInit {
     this.error = null;
     this.booksService.getTopics().subscribe({
       next: (response) => {
-        console.log('Topics response:', response); // Debug log
+        console.log('Topics response:', response);
         this.topics = Array.isArray(response) ? response : response.data || [];
-        console.log('Processed topics:', this.topics); // Debug log
+        console.log('Processed topics:', this.topics);
 
-        // Check for topics with missing IDs
         const invalidTopics = this.topics.filter(
           (topic) => !topic.id && !topic._id
         );
@@ -82,7 +91,7 @@ export class CreateBookComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading topics:', err); // Debug log
+        console.error('Error loading topics:', err);
         this.error = err.error?.message || 'Failed to load topics';
         this.loading = false;
       },
@@ -90,29 +99,34 @@ export class CreateBookComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('Form submitted, valid:', this.bookForm.valid);
+    console.log('Form errors:', {
+      title: this.bookForm.get('title')?.errors,
+      author: this.bookForm.get('author')?.errors,
+      topics: this.bookForm.get('topics')?.errors,
+    });
+
     if (this.bookForm.valid) {
       const formValue = this.bookForm.value;
-      console.log('Form value:', formValue); // Debug log
+      console.log('Form value:', formValue);
 
-      // Filter out null/undefined values from topics array
       const validTopics = formValue.topics.filter(
         (topicId: any) => topicId != null && topicId !== ''
       );
-      console.log('Valid topics:', validTopics); // Debug log
+      console.log('Valid topics:', validTopics);
 
-      // Additional validation
       if (validTopics.length === 0) {
         this.error = 'Please select at least one valid topic';
         return;
       }
 
       const payload = {
-        title: formValue.title.trim(),
-        author: formValue.author.trim(),
+        title: formValue.title,
+        author: formValue.author,
         topics: validTopics,
       };
 
-      console.log('Final payload:', payload); // Debug log
+      console.log('Final payload:', payload);
 
       this.loading = true;
       this.error = null;
@@ -120,11 +134,11 @@ export class CreateBookComponent implements OnInit {
       this.booksService.createBook(payload).subscribe({
         next: () => {
           this.loading = false;
-          this.bookForm.reset(); // Reset form
+          this.bookForm.reset();
           this.router.navigate(['/books']);
         },
         error: (err) => {
-          console.error('Create book error:', err); // Debug log
+          console.error('Create book error:', err);
           this.loading = false;
           this.error =
             err.error?.message ||
@@ -132,11 +146,47 @@ export class CreateBookComponent implements OnInit {
         },
       });
     } else {
-      // Mark all fields as touched to show validation errors
       Object.keys(this.bookForm.controls).forEach((key) => {
         const control = this.bookForm.get(key);
         control?.markAsTouched();
       });
     }
+  }
+
+  get titleControl(): FormControl {
+    return this.bookForm.get('title') as FormControl;
+  }
+
+  get authorControl(): FormControl {
+    return this.bookForm.get('author') as FormControl;
+  }
+
+  get topicsControl(): FormControl {
+    return this.bookForm.get('topics') as FormControl;
+  }
+
+  // Handle checkbox changes
+  onTopicChange(topicId: string, event: Event): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    const currentTopics = this.topicsControl.value as string[] || [];
+    let updatedTopics: string[];
+
+    if (isChecked) {
+      updatedTopics = [...currentTopics, topicId];
+    } else {
+      updatedTopics = currentTopics.filter((id) => id !== topicId);
+    }
+
+    this.topicsControl.setValue(updatedTopics);
+    this.topicsControl.markAsTouched();
+    console.log('Updated topics:', updatedTopics);
+  }
+
+  debugForm(): void {
+    console.log('Form valid:', this.bookForm.valid);
+    console.log('Form value:', this.bookForm.value);
+    console.log('Title errors:', this.titleControl.errors);
+    console.log('Author errors:', this.authorControl.errors);
+    console.log('Topics errors:', this.topicsControl.errors);
   }
 }

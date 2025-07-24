@@ -11,11 +11,13 @@ import { Router } from '@angular/router';
 
 import { BookIssueService } from '../book-issue-return';
 import { BookIssueDto } from '../../../interface/book-issue-return.interface';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-book-return',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule , NoLeadingSpaceDirective],
   providers: [BookIssueService],
   templateUrl: './book-return.html',
   styleUrls: ['./book-return.scss'],
@@ -32,8 +34,8 @@ export class BookReturnComponent {
     private router: Router
   ) {
     this.returnForm = this.fb.group({
-      userId: ['', Validators.required],
-      bookId: ['', Validators.required],
+      userId: ['', Validators.required , noLeadingSpaceValidator()],
+      bookId: ['', Validators.required , noLeadingSpaceValidator()],
     });
   }
 

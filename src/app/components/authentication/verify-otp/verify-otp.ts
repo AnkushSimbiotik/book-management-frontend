@@ -3,10 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 
 @Component({
   selector: 'app-verify-otp',
-  imports: [CommonModule, FormsModule , ReactiveFormsModule],
+  imports: [CommonModule, FormsModule , ReactiveFormsModule , NoLeadingSpaceDirective],
   templateUrl: './verify-otp.html',
 })
 export class VerifyOtpComponent {

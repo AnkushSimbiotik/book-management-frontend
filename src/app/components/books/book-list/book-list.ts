@@ -1,5 +1,4 @@
-// src/app/components/books/book-list/book-list.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -14,6 +13,10 @@ import { BooksService } from '../book.service';
 import { Book, PaginationQuery } from '../../../interface/books.interface';
 import { Topic } from '../../../interface/topics.interface';
 import { RouterLink } from '@angular/router';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { SearchService } from '../../../common/service/search.service';
+import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
+import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
 
 @Component({
   selector: 'app-books-list',
@@ -24,40 +27,56 @@ import { RouterLink } from '@angular/router';
     ReactiveFormsModule,
     RouterLink,
     PaginationComponent,
+    NoLeadingSpaceDirective,
   ],
   providers: [BooksService],
   templateUrl: './book-list.html',
   styleUrls: ['./book-list.scss'],
 })
-export class BooksListComponent implements OnInit {
+export class BooksListComponent implements OnInit, OnDestroy {
   books: Book[] = [];
   topics: Topic[] = [];
   currentPage: number = 1;
   totalPages: number = 1;
   pageSize: number = 10;
   searchQuery: string = '';
-  sort: string = '';
+  sort: string = 'createdAt:desc';
   loading: boolean = false;
   error: string | null = null;
   editingBookId: string | null = null;
   editForm: FormGroup;
+  private destroy$ = new Subject<void>();
 
-  constructor(private booksService: BooksService, private fb: FormBuilder) {
+  constructor(
+    private booksService: BooksService,
+    private fb: FormBuilder,
+    public searchService: SearchService
+  ) {
     this.editForm = this.fb.group({
-      title: ['', Validators.required],
-      author: ['', Validators.required],
+      title: ['', [Validators.required, noLeadingSpaceValidator()]],
+      author: ['', [Validators.required, noLeadingSpaceValidator()]],
       topics: [[], Validators.required],
     });
+
+    this.searchService
+      .getSearchControl()
+      .setValidators([noLeadingSpaceValidator()]);
   }
 
   ngOnInit(): void {
     this.loadBooks();
     this.loadTopics();
+    this.setupSearch();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadBooks(): void {
     this.loading = true;
-    this.error = null; // Clear previous errors
+    this.error = null;
     const offset = this.currentPage;
     const query: PaginationQuery = {
       offset: offset,
@@ -66,71 +85,22 @@ export class BooksListComponent implements OnInit {
       search: this.searchQuery || undefined,
     };
 
-    console.log('Loading books with query:', query); // Debug log
+    console.log('Loading books with query:', query);
 
     this.booksService.getBooks(query).subscribe({
       next: (response) => {
-        let filteredBooks = response.data;
-
-        // Debug: Log the first book to see its structure
-        if (filteredBooks.length > 0) {
-          console.log('First book structure:', filteredBooks[0]);
-          console.log('First book topics:', filteredBooks[0].topics);
-        }
-
-        // Client-side search fallback if backend search isn't working
-        if (this.searchQuery && filteredBooks.length === response.data.length) {
-          const searchTerm = this.searchQuery.toLowerCase();
-          filteredBooks = response.data.filter(
-            (book) =>
-              book.title?.toLowerCase().includes(searchTerm) ||
-              book.author?.toLowerCase().includes(searchTerm)
-          );
-          console.log(
-            'Applied client-side search filter:',
-            filteredBooks.length,
-            'results'
-          );
-        }
-
-        this.books = filteredBooks;
+        this.books = response.data || [];
         this.currentPage = response.number;
         this.totalPages = response.totalPages;
-
-        // Client-side case-insensitive sorting fallback
-        if (this.sort && !this.sort.includes('createdAt')) {
-          this.books.sort((a, b) => {
-            const field = this.sort.split(':')[0];
-            const direction = this.sort.split(':')[1];
-
-            let aValue = '';
-            let bValue = '';
-
-            if (field === 'title') {
-              aValue = a.title?.toLowerCase() || '';
-              bValue = b.title?.toLowerCase() || '';
-            } else if (field === 'author') {
-              aValue = a.author?.toLowerCase() || '';
-              bValue = b.author?.toLowerCase() || '';
-            }
-
-            if (direction === 'desc') {
-              return bValue.localeCompare(aValue);
-            } else {
-              return aValue.localeCompare(bValue);
-            }
-          });
-        }
-
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading books:', err); // Debug log
+        console.error('Error loading books:', err);
         this.error =
           err.error?.message ||
           `Failed to load books. Ensure backend is running on http://localhost:3000 and proxy is configured.`;
         this.loading = false;
-        this.books = []; // Clear books on error
+        this.books = [];
       },
     });
   }
@@ -138,14 +108,9 @@ export class BooksListComponent implements OnInit {
   loadTopics(): void {
     this.booksService.getTopics().subscribe({
       next: (response) => {
-        console.log('Topics response:', response); // Debug log
+        console.log('Topics response:', response);
         this.topics = Array.isArray(response) ? response : response.data || [];
-        console.log('Loaded topics:', this.topics); // Debug log
-
-        // Log first topic structure if available
-        if (this.topics.length > 0) {
-          console.log('First topic structure:', this.topics[0]);
-        }
+        console.log('Loaded topics:', this.topics);
       },
       error: (err) => {
         console.error('Failed to load topics:', err);
@@ -153,15 +118,10 @@ export class BooksListComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    console.log('Search triggered with query:', this.searchQuery);
-    this.currentPage = 1;
-    this.loadBooks();
-  }
-
   clearSearch(): void {
     console.log('Clearing search');
     this.searchQuery = '';
+    this.searchService.getSearchControl().setValue('');
     this.currentPage = 1;
     this.loadBooks();
   }
@@ -176,14 +136,13 @@ export class BooksListComponent implements OnInit {
     this.loadBooks();
   }
 
-  // Edit functionality
   startEdit(book: Book): void {
     this.editingBookId = book._id || (book as any).id;
     this.editForm.patchValue({
       title: book.title,
       author: book.author,
       topics: Array.isArray(book.topics)
-        ? book.topics.map((t) => (typeof t === 'string' ? t : t.id))
+        ? book.topics.map((t) => (typeof t === 'string' ? t : t.id || t._id))
         : [],
     });
   }
@@ -196,16 +155,14 @@ export class BooksListComponent implements OnInit {
   saveEdit(): void {
     if (this.editForm.invalid) return;
     const formValue = this.editForm.value;
-    // Ensure topics is an array of strings (IDs)
     const updatePayload = {
       ...formValue,
       topics: (formValue.topics || []).map((t: any) =>
-        typeof t === 'string' ? t : t.id
+        typeof t === 'string' ? t : t.id || t._id
       ),
     };
     this.booksService.updateBook(this.editingBookId!, updatePayload).subscribe({
       next: (response) => {
-        // Update the book in the local array
         const index = this.books.findIndex(
           (book) => (book._id || (book as any).id) === this.editingBookId
         );
@@ -233,7 +190,6 @@ export class BooksListComponent implements OnInit {
     }
   }
 
-  // Helper methods
   getBookId(book: Book): string | undefined {
     return book._id || (book as any).id;
   }
@@ -243,34 +199,23 @@ export class BooksListComponent implements OnInit {
   }
 
   getTopicNames(topics: any[]): string {
-    console.log('getTopicNames called with:', topics); // Debug log
-
     if (!topics || topics.length === 0) {
-      console.log('No topics found');
       return 'No topics';
     }
 
-    // Check if topics are objects with genre property
-    if (topics[0] && typeof topics[0] === 'object' && topics[0].genre) {
-      console.log('Topics are objects with genre');
-      return topics.map((topic) => topic.genre || 'Unknown').join(', ');
-    }
-
-    // Topics are likely IDs, need to look them up in the topics array
-    if (topics[0] && typeof topics[0] === 'string') {
-      console.log('Topics are IDs, looking up in topics array');
-      const topicNames = topics.map((topicId) => {
-        const topic = this.topics.find(
-          (t) => t.id === topicId || t._id === topicId
-        );
-        console.log(`Looking for topic ID ${topicId}, found:`, topic);
-        return topic ? topic.genre : 'Unknown Topic';
-      });
-      return topicNames.join(', ');
-    }
-
-    console.log('Unknown topic format:', topics);
-    return 'Unknown format';
+    return topics
+      .map((topic) => {
+        if (typeof topic === 'object' && topic.genre) {
+          return topic.genre || 'Unknown';
+        } else {
+          const topicId = typeof topic === 'string' ? topic : topic.id || topic._id;
+          const foundTopic = this.topics.find(
+            (t) => t.id === topicId || t._id === topicId
+          );
+          return foundTopic ? foundTopic.genre || 'Unknown' : 'Unknown';
+        }
+      })
+      .join(', ');
   }
 
   getSelectedTopicNames(): string {
@@ -279,7 +224,7 @@ export class BooksListComponent implements OnInit {
       selectedTopicIds.includes(topic.id || (topic as any)._id)
     );
     return selectedTopics
-      .map((topic) => topic.genre || topic.genre || 'Unknown')
+      .map((topic) => topic.genre || 'Unknown')
       .join(', ');
   }
 
@@ -291,5 +236,21 @@ export class BooksListComponent implements OnInit {
   }
   get topicsControl(): FormControl {
     return this.editForm.get('topics') as FormControl;
+  }
+
+  private setupSearch(): void {
+    this.searchService
+      .getSearchControl()
+      .valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((value: string) => {
+        this.searchQuery = value ? value.trim() : '';
+        console.log('Dynamic search query:', this.searchQuery);
+        this.currentPage = 1;
+        this.loadBooks();
+      });
   }
 }

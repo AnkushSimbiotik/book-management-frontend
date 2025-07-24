@@ -13,8 +13,7 @@
             <p><strong>Genre:</strong> {{ topic.genre || 'N/A' }}</p>
             <p><strong>Description:</strong> {{ topic.description || 'No description available' }}</p>
             <div class="mt-3">
-              <a class="btn btn-primary me-2" [routerLink]="['/topics', topic.id, 'edit']">Edit</a>
-              <a class="btn btn-secondary" routerLink="/topics">Back to List</a>
+              <a class="btn btn-success" routerLink="/topics">Back to List</a>
             </div>
           </div>
         </div>
