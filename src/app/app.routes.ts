@@ -18,6 +18,13 @@ import { EditTopicComponent } from './components/topics/edit-topic/edit-topic';
 import { BookIssueComponent } from './components/book-issue-and-return/book-issue/book-issue';
 import { BookReturnComponent } from './components/book-issue-and-return/book-return/book-return';
 import { IssuedBooksListComponent } from './components/book-issue-and-return/issued-books-list/issued-books-list';
+import { Users } from './components/users/users.service';
+import { UserList } from './components/users/user-list/user-list';
+
+import { EditUsers } from './components/users/edit-users/edit-users';
+import { CreateUserComponent } from './components/users/create-user/create-user';
+import { ViewUser } from './components/users/view-user/view-user';
+
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -74,5 +81,10 @@ export const routes: Routes = [
     component: IssuedBooksListComponent,
     canActivate: [AuthGuard],
   },
+  { path: 'users', component: UserList  },
+  { path: 'users/create', component: CreateUserComponent },
+  { path: 'users/:id', component: ViewUser },
+  { path: 'users/:id/edit', component: EditUsers },
+  
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

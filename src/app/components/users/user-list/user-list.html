@@ -1,0 +1,154 @@
+<div class="container mt-5">
+  <h2>Customers List</h2>
+
+  <!-- Search and Sort -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          [formControl]="searchControl"
+          placeholder="Search customers by name, email, or ID..."
+          appNoLeadingSpace
+        />
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="clearSearch()"
+          [disabled]="!searchControl.value"
+        >
+          Clear
+        </button>
+      </div>
+      <div
+        *ngIf="searchControl.touched && searchControl.errors?.['leadingSpace']"
+        class="invalid-feedback d-block"
+      >
+        Leading spaces are not allowed
+      </div>
+    </div>
+    <div class="col-md-6">
+      <select class="form-select" [(ngModel)]="sort" (change)="onSort()">
+        <option value="name:asc">Name (A-Z)</option>
+        <option value="name:desc">Name (Z-A)</option>
+        <option value="email:asc">Email (A-Z)</option>
+        <option value="email:desc">Email (Z-A)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading or Error State -->
+  <div *ngIf="loading" class="alert alert-info">Loading customers...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Search Results Feedback -->
+  <div *ngIf="searchQuery && !loading && !error" class="alert alert-info">
+    Search results for "{{ searchQuery }}": {{ users.length }} customer(s) found
+    <button
+      class="btn btn-sm btn-outline-secondary ms-2"
+      (click)="clearSearch()"
+    >
+      Clear Search
+    </button>
+  </div>
+
+  <!-- Customers Table -->
+  <div *ngIf="users.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>ID Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>
+            <ng-container *ngIf="editUserId !== user.id; else editUsername">
+              {{ user.name }}
+            </ng-container>
+            <ng-template #editUsername>
+              <input
+                class="form-control form-control-sm"
+                [formControl]="nameControl"
+                appNoLeadingSpace
+                [class.is-invalid]="nameControl.invalid && nameControl.touched"
+              />
+              <div
+                *ngIf="nameControl.hasError('required')"
+                class="invalid-feedback"
+              >
+                Name is required
+              </div>
+            </ng-template>
+          </td>
+          
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone }}</td>
+          <td>
+            {{ user.identificationType }}: {{ user.identificationNumber }}
+          </td>
+          <td>
+            <ng-container *ngIf="editUserId !== user.id; else saveCancel">
+              <a
+                [routerLink]="['/users', user.id]"
+                class="btn btn-info btn-sm me-2"
+                >View</a
+              >
+              <button
+                class="btn btn-warning btn-sm me-2"
+                (click)="startEdit(user)"
+              >
+                Edit
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="deleteUser(user.id)"
+              >
+                Delete
+              </button>
+            </ng-container>
+            <ng-template #saveCancel>
+              <button
+                class="btn btn-success btn-sm me-2"
+                (click)="saveEdit()"
+                [disabled]="editForm.invalid"
+              >
+                Save
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                Cancel
+              </button>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div
+    *ngIf="users.length === 0 && !loading && searchQuery"
+    class="alert alert-warning"
+  >
+    No customers found for "{{ searchQuery }}".
+  </div>
+  <div
+    *ngIf="users.length === 0 && !loading && !searchQuery"
+    class="alert alert-warning"
+  >
+    No customers found.
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    *ngIf="totalPages > 1"
+    [currentPage]="currentPage"
+    [totalPages]="totalPages"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
+</div>

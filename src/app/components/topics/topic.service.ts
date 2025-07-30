@@ -29,7 +29,6 @@ export class TopicsService {
   }
 
   getTopics(query: PaginationQuery): Observable<PaginatedTopics> {
-    console.log('Query:', query);
     const params: { [key: string]: string } = {
       offset: query.offset?.toString() || '1',
       limit: query.limit?.toString() || '10',
@@ -50,7 +49,7 @@ export class TopicsService {
   }
 
   getTopic(id: string): Observable<Topic> {
-    console.log('Fetching topic with ID:', id); // Debug log
+    console.log('Fetching topic with ID:', id); 
     return this.http
       .get<Topic>(API_CONSTANTS.TOPICS.BY_ID(id), { headers: this.headers })
       .pipe(

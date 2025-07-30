@@ -8,20 +8,98 @@
         <div class="card-body">
           <form [formGroup]="issueForm" (ngSubmit)="onSubmit()">
             <div class="mb-3">
-              <label for="userId" class="form-label">User ID</label>
-              <input
-                type="text"
-                class="form-control"
-                id="userId"
-                appNoLeadingSpace
-                formControlName="userId"
-                [class.is-invalid]="issueForm.get('userId')?.invalid && issueForm.get('userId')?.touched"
-              />
+              <label for="customerSearch" class="form-label"
+                >Select Customer</label
+              >
+              <div class="position-relative customer-search-container">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="customerSearch"
+                  placeholder="Search for customer by name, email, or ID..."
+                  [(ngModel)]="customerSearchTerm"
+                  (input)="onCustomerSearchInput($event)"
+                  (focus)="showCustomerDropdown = true"
+                  [class.is-invalid]="issueForm.get('userId')?.invalid && issueForm.get('userId')?.touched"
+                />
+                <div
+                  *ngIf="customerLoading"
+                  class="position-absolute top-50 end-0 translate-middle-y me-2"
+                >
+                  <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <button
+                  *ngIf="selectedCustomer"
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary position-absolute top-50 end-0 translate-middle-y me-2"
+                  (click)="clearCustomerSelection()"
+                  title="Clear selection"
+                >
+                  ×
+                </button>
+
+                <!-- Customer dropdown -->
+                <div
+                  *ngIf="showCustomerDropdown && filteredCustomers.length > 0"
+                  class="dropdown-menu show w-100 position-absolute"
+                  style="z-index: 1000; max-height: 200px; overflow-y: auto"
+                >
+                  <div
+                    *ngFor="let customer of filteredCustomers"
+                    class="dropdown-item cursor-pointer"
+                    (click)="selectCustomer(customer)"
+                    style="cursor: pointer"
+                  >
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                    >
+                      <div>
+                        <strong>{{ customer.name }}</strong>
+                        <br />
+                        <small class="text-muted">{{ customer.email }}</small>
+                      </div>
+                      <small class="text-muted"
+                        >{{ customer.identificationType }}: {{
+                        customer.identificationNumber }}</small
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No results message -->
+                <div
+                  *ngIf="showCustomerDropdown && filteredCustomers.length === 0 && customerSearchTerm.trim()"
+                  class="dropdown-menu show w-100 position-absolute"
+                  style="z-index: 1000"
+                >
+                  <div class="dropdown-item text-muted">No customers found</div>
+                </div>
+              </div>
+
+              <!-- Hidden input for form validation -->
+              <input type="hidden" formControlName="userId" />
+
               <div
                 *ngIf="issueForm.get('userId')?.hasError('required')"
                 class="invalid-feedback"
               >
-                User ID is required
+                Please select a customer
+              </div>
+
+              <!-- Selected customer info -->
+              <div *ngIf="selectedCustomer" class="mt-2">
+                <div class="alert alert-info py-2">
+                  <small>
+                    <strong>Selected:</strong> {{ selectedCustomer.name }} ({{
+                    selectedCustomer.email }})<br />
+                    <strong>ID:</strong> {{ selectedCustomer.id }}<br />
+                    <strong>Phone:</strong> {{ selectedCustomer.phone }}<br />
+                    <strong>{{ selectedCustomer.identificationType }}:</strong>
+                    {{ selectedCustomer.identificationNumber }}
+                  </small>
+                </div>
               </div>
             </div>
             <div class="mb-3">
@@ -53,7 +131,6 @@
               {{ success }}
             </div>
           </form>
-        
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@
                 type="text"
                 class="form-control"
                 id="genre"
+                appNoLeadingSpace
                 formControlName="genre"
                 [class.is-invalid]="topicForm.get('genre')?.invalid && topicForm.get('genre')?.touched"
               >
@@ -25,6 +26,7 @@
               <textarea
                 class="form-control"
                 id="description"
+                appNoLeadingSpace
                 formControlName="description"
                 [class.is-invalid]="topicForm.get('description')?.invalid && topicForm.get('description')?.touched"
               ></textarea>

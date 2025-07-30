@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -16,6 +16,15 @@ import {
 import { PaginationComponent } from '../../../common/pagination/pagination';
 import { NoLeadingSpaceDirective } from '../../../common/custom-directives/no-leading-space.directive';
 import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-leading-space.validator';
+import { CustomerService } from '../../customers/customer.service';
+import { CustomerInterface } from '../../../interface/customer.interface';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  Subject,
+  takeUntil,
+  BehaviorSubject,
+} from 'rxjs';
 
 @Component({
   selector: 'app-book-issue',
@@ -24,7 +33,7 @@ import { noLeadingSpaceValidator } from '../../../common/custom-validatiors/no-l
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    NoLeadingSpaceDirective
+    NoLeadingSpaceDirective,
   ],
   providers: [BookIssueService],
   templateUrl: './book-issue.html',
@@ -40,20 +49,125 @@ export class BookIssueComponent implements OnInit {
   issuedBooksPage: number = 1;
   issuedBooksPageSize: number = 5;
 
+  // Customer search properties
+  customers: CustomerInterface[] = [];
+  filteredCustomers: CustomerInterface[] = [];
+  selectedCustomer: CustomerInterface | null = null;
+  customerSearchTerm: string = '';
+  showCustomerDropdown: boolean = false;
+  customerLoading: boolean = false;
+  private destroy$ = new Subject<void>();
+  private customerSearchTerm$ = new BehaviorSubject<string>('');
+
   constructor(
     private fb: FormBuilder,
     private bookIssueService: BookIssueService,
+    private customerService: CustomerService,
     private router: Router
   ) {
     this.issueForm = this.fb.group({
-      userId: ['', Validators.required , noLeadingSpaceValidator()],
-      bookId: ['', Validators.required , noLeadingSpaceValidator()],
+      userId: ['', Validators.required, noLeadingSpaceValidator()],
+      bookId: ['', Validators.required, noLeadingSpaceValidator()],
     });
   }
 
   ngOnInit(): void {
     // Test backend connectivity
     this.testBackendConnectivity();
+    this.setupCustomerSearch();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  setupCustomerSearch(): void {
+    // Load initial customers
+    this.loadCustomers();
+
+    // Setup debounced search
+    this.customerSearchTerm$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchTerm: string) => {
+        this.searchCustomers(searchTerm);
+      });
+  }
+
+  loadCustomers(): void {
+    this.customerLoading = true;
+    this.customerService.getCustomers({ offset: 1, limit: 50 }).subscribe({
+      next: (response) => {
+        if (response.content?.data) {
+          this.customers = response.content.data;
+          this.filteredCustomers = this.customers;
+        }
+        this.customerLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading customers:', err);
+        this.customerLoading = false;
+        this.error = 'Failed to load customers';
+      },
+    });
+  }
+
+  searchCustomers(searchTerm: string): void {
+    if (!searchTerm.trim()) {
+      this.filteredCustomers = this.customers;
+      this.showCustomerDropdown = false;
+      return;
+    }
+
+    this.customerLoading = true;
+    this.customerService.searchCustomers(searchTerm).subscribe({
+      next: (response) => {
+        if (response.content?.data) {
+          this.filteredCustomers = response.content.data;
+          this.showCustomerDropdown = this.filteredCustomers.length > 0;
+        } else {
+          this.filteredCustomers = [];
+          this.showCustomerDropdown = false;
+        }
+        this.customerLoading = false;
+      },
+      error: (err) => {
+        console.error('Error searching customers:', err);
+        this.customerLoading = false;
+        this.filteredCustomers = [];
+        this.showCustomerDropdown = false;
+      },
+    });
+  }
+
+  selectCustomer(customer: CustomerInterface): void {
+    this.selectedCustomer = customer;
+    this.issueForm.patchValue({ userId: customer.id });
+    this.customerSearchTerm = `${customer.name} (${customer.email})`;
+    this.showCustomerDropdown = false;
+  }
+
+  clearCustomerSelection(): void {
+    this.selectedCustomer = null;
+    this.issueForm.patchValue({ userId: '' });
+    this.customerSearchTerm = '';
+    this.customerSearchTerm$.next('');
+    this.showCustomerDropdown = false;
+  }
+
+  onCustomerSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.customerSearchTerm$.next(target.value);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.customer-search-container')) {
+      this.showCustomerDropdown = false;
+    }
   }
 
   testBackendConnectivity(): void {

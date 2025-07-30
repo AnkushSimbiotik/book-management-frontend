@@ -28,6 +28,14 @@ export const API_CONSTANTS = {
     BASE: 'api/book-issue',
     ISSUE: 'api/book-issue/issue',
     RETURN: 'api/book-issue/return',
-    BY_USER: (userId: string) => `api/book-issue/user/${userId}`,
+    BY_USER: (customerId: string) => `api/book-issue/user/${customerId}`,
+  },
+  CUSTOMERS: {
+    BASE: 'api/customers',
+    BY_ID: (_id: string) => `api/customers/${_id}`,
+  },
+  CUSTOMER: {
+    BASE: 'api/customer',
+    BY_ID: (_id: string) => `api/customer/${_id}`,
   },
 };
